@@ -3,8 +3,7 @@
 import { useEffect, useState } from "react";
 import { getStoredAuth } from "@/helpers/local-storage";
 import DashboardLayout from "@/components/DashboardLayout";
-import DoctorDashboard from "@/components/dashboard/DoctorDashboard";
-import BlankDashboard from "@/components/dashboard/BlankDashboard";
+import { getDashboardForRole } from "@/components/dashboard";
 
 export default function DashboardPage() {
   const [role, setRole] = useState<string | null>(null);
@@ -14,9 +13,11 @@ export default function DashboardPage() {
     setRole(auth?.role ?? null);
   }, []);
 
+  const Dashboard = getDashboardForRole(role);
+
   return (
     <DashboardLayout>
-      {role === "doctor" || role === "admin" ? <DoctorDashboard /> : <BlankDashboard role={role} />}
+      <Dashboard role={role} />
     </DashboardLayout>
   );
 }

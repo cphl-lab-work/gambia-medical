@@ -2,6 +2,7 @@ import "reflect-metadata";
 import { DataSource } from "typeorm";
 import { AppDataSource } from "./data-source";
 import { User } from "./entity/User";
+import { PatientClerking } from "./entity/PatientClerking";
 
 let connection: DataSource | null = null;
 
@@ -21,4 +22,4 @@ export async function getRepository<T>(entity: new () => T) {
   return ds.getRepository(entity as never);
 }
 
-export { User };
+export { User, PatientClerking };

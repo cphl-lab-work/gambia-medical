@@ -51,6 +51,11 @@ const icons = {
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
     </svg>
   ),
+  clerking: (
+    <svg className={iconClass} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+    </svg>
+  ),
   recipe: (
     <svg className={iconClass} fill="none" stroke="currentColor" viewBox="0 0 24 24">
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
@@ -74,22 +79,31 @@ const icons = {
   ),
 };
 
-const NAV = [
+type NavItem = { href: string; label: string; icon: React.ReactNode; roles?: string[] };
+
+const NAV: NavItem[] = [
   { href: "/dashboard", label: "Dashboard", icon: icons.dashboard },
-  { href: "#", label: "Doctors", icon: icons.doctors },
-  { href: "#", label: "Staff", icon: icons.staff },
-  { href: "#", label: "Patients", icon: icons.patients },
-  { href: "#", label: "Appointments", icon: icons.appointments },
-  { href: "#", label: "Departments", icon: icons.departments },
-  { href: "#", label: "Laboratory", icon: icons.laboratory },
+  { href: "/dashboard/clerking", label: "Patient clerking", icon: icons.clerking, roles: ["receptionist", "nurse"] },
+  { href: "#", label: "Doctors", icon: icons.doctors, roles: ["admin", "doctor", "receptionist"] },
+  { href: "#", label: "Staff", icon: icons.staff, roles: ["admin"] },
+  { href: "#", label: "Patients", icon: icons.patients, roles: ["admin", "doctor", "receptionist", "nurse"] },
+  { href: "#", label: "Appointments", icon: icons.appointments, roles: ["admin", "doctor", "receptionist"] },
+  { href: "#", label: "Departments", icon: icons.departments, roles: ["admin", "doctor"] },
+  { href: "#", label: "Laboratory", icon: icons.laboratory, roles: ["admin", "doctor", "lab_tech"] },
   { href: "#", label: "Account", icon: icons.account },
 ];
 
-const SYSTEM = [
-  { href: "#", label: "Recipe Management", icon: icons.recipe },
-  { href: "#", label: "Medicine Management", icon: icons.medicine },
-  { href: "#", label: "User Management", icon: icons.users },
+const SYSTEM: NavItem[] = [
+  { href: "#", label: "Recipe Management", icon: icons.recipe, roles: ["admin", "pharmacist"] },
+  { href: "#", label: "Medicine Management", icon: icons.medicine, roles: ["admin", "pharmacist"] },
+  { href: "#", label: "User Management", icon: icons.users, roles: ["admin"] },
 ];
+
+function canSeeNavItem(item: NavItem, role: string | null): boolean {
+  if (!role) return false;
+  if (!item.roles || item.roles.length === 0) return true;
+  return item.roles.includes(role);
+}
 
 // Messages grouped by date (sender, date, message, icon/initial)
 const MESSAGES_BY_DATE: { date: string; items: { sender: string; time: string; message: string; initial: string; unread?: boolean }[] }[] = [
@@ -215,7 +229,7 @@ export default function DashboardLayout({
           </button>
         </div>
         <nav className="flex-1 min-h-0 overflow-y-auto py-2">
-          {NAV.map((item) => (
+          {NAV.filter((item) => canSeeNavItem(item, auth.role)).map((item) => (
             <Link
               key={item.href}
               href={item.href}
@@ -236,24 +250,28 @@ export default function DashboardLayout({
           ))}
         </nav>
         <div className="mt-auto shrink-0 border-t border-white/20 py-2 bg-[var(--sidebar-bg)]">
-          <div className={sidebarCollapsed ? "px-2" : "px-4 py-1 text-xs text-white/70"}>
-            {!sidebarCollapsed && "System Settings"}
-          </div>
-          {SYSTEM.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className="flex items-center gap-3 px-4 py-2 text-sm hover:bg-white/10"
-            >
-              <span className="flex items-center justify-center text-white">{item.icon}</span>
-              {!sidebarCollapsed && (
-                <>
-                  <span className="flex-1 min-w-0">{item.label}</span>
-                  <span className="shrink-0">›</span>
-                </>
-              )}
-            </Link>
-          ))}
+          {SYSTEM.filter((item) => canSeeNavItem(item, auth.role)).length > 0 && (
+            <>
+              <div className={sidebarCollapsed ? "px-2" : "px-4 py-1 text-xs text-white/70"}>
+                {!sidebarCollapsed && "System Settings"}
+              </div>
+              {SYSTEM.filter((item) => canSeeNavItem(item, auth.role)).map((item) => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className="flex items-center gap-3 px-4 py-2 text-sm hover:bg-white/10"
+                >
+                  <span className="flex items-center justify-center text-white">{item.icon}</span>
+                  {!sidebarCollapsed && (
+                    <>
+                      <span className="flex-1 min-w-0">{item.label}</span>
+                      <span className="shrink-0">›</span>
+                    </>
+                  )}
+                </Link>
+              ))}
+            </>
+          )}
           <button
             type="button"
             onClick={handleLogout}

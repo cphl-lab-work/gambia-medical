@@ -1,0 +1,34 @@
+{
+  "statistics": [
+    { "label": "Expected Appointments", "value": 24, "icon": "appointments" },
+    { "label": "New Patients", "value": 5, "icon": "newPatients" },
+    { "label": "Pending Clerking", "value": 3, "icon": "pendingClerking" },
+    { "label": "Checked-in Today", "value": 12, "icon": "checkedIn" }
+  ],
+  "schedule": [
+    { "id": "s1", "day": "Mon", "title": "Monitoring", "start": "08:00", "end": "10:00", "color": "blue" },
+    { "id": "s2", "day": "Mon", "title": "Appointment", "start": "10:00", "end": "12:00", "color": "pink" },
+    { "id": "s3", "day": "Tue", "title": "Meeting", "start": "08:00", "end": "09:00", "color": "gray" },
+    { "id": "s4", "day": "Tue", "title": "Appointment", "start": "09:00", "end": "11:00", "color": "gray" },
+    { "id": "s5", "day": "Wed", "title": "Discussion", "start": "08:00", "end": "09:00", "color": "gray" },
+    { "id": "s6", "day": "Wed", "title": "Appointment", "start": "10:00", "end": "12:00", "color": "gray" }
+  ],
+  "upcomingAppointments": [
+    { "id": "apt-1", "patientName": "Alex Smith", "patientId": "P001", "disease": "Hypertension", "date": "2025-03-05", "time": "10:00", "doctorName": "Dr. Nazar Becks", "department": "General Physician" },
+    { "id": "apt-2", "patientName": "Sarah Jones", "patientId": "P002", "disease": "Diabetes", "date": "2025-03-06", "time": "09:00", "doctorName": "Dr. Alex Hales", "department": "General Physician" },
+    { "id": "apt-3", "patientName": "Samuel Dutton", "patientId": "P003", "disease": "Asthma", "date": "2025-03-07", "time": "10:00", "doctorName": "Dr. John Darwin", "department": "Radiologist & ECG" },
+    { "id": "apt-4", "patientName": "Carolina Gilson", "patientId": "P004", "disease": "Allergy", "date": "2025-03-10", "time": "11:30", "doctorName": "Dr. Nazar Becks", "department": "Gynecologist" }
+  ],
+  "newPatients": [
+    { "id": "np-1", "patientName": "James Okello", "patientId": "OPD-2025-001", "arrivalSource": "OPD", "arrivedAt": "2025-02-26T08:15", "status": "Pending assessment" },
+    { "id": "np-2", "patientName": "Mary Akinyi", "patientId": "EM-2025-012", "arrivalSource": "Emergency Department", "arrivedAt": "2025-02-26T07:30", "status": "Assessed" },
+    { "id": "np-3", "patientName": "Peter Ochieng", "patientId": "EL-2025-003", "arrivalSource": "Elective Admission", "arrivedAt": "2025-02-26T06:00", "status": "Admitted" },
+    { "id": "np-4", "patientName": "Grace Mwangi", "patientId": "OPD-2025-002", "arrivalSource": "OPD", "arrivedAt": "2025-02-26T09:00", "status": "Pending assessment" },
+    { "id": "np-5", "patientName": "David Kamau", "patientId": null, "arrivalSource": "Emergency Department", "arrivedAt": "2025-02-26T10:45", "status": "Pending assessment" }
+  ],
+  "notifications": [
+    { "id": "n1", "patientName": "Tom Curtis", "message": "made an appointment", "date": "2025-02-16", "time": "12:00" },
+    { "id": "n2", "patientName": "Betty Jackson", "message": "made an appointment", "date": "2025-02-15", "time": "10:00" }
+  ],
+  "activityPercent": 80
+}

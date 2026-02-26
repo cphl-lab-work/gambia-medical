@@ -1,6 +1,7 @@
 import "reflect-metadata";
 import { DataSource } from "typeorm";
 import { User } from "./entity/User";
+import { PatientClerking } from "./entity/PatientClerking";
 
 const dbHost = process.env.DB_HOST ?? "localhost";
 const dbPort = parseInt(process.env.DB_PORT ?? "5432", 10);
@@ -17,7 +18,7 @@ export const AppDataSource = new DataSource({
   database: dbName,
   synchronize: false,
   logging: process.env.NODE_ENV === "development",
-  entities: [User],
+  entities: [User, PatientClerking],
   migrations: ["src/database/migrations/*.ts"],
   migrationsTableName: "migrations",
 });

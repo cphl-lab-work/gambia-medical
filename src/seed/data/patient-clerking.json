@@ -1,0 +1,69 @@
+{
+  "phase": "Phase 1: Patient Clerking (Admission & Assessment)",
+  "triggerDescription": "Patient arrives via OPD, Emergency Department, or Elective Admission.",
+  "arrivalSources": [
+    { "id": "opd", "label": "OPD", "description": "Out-Patient Department" },
+    { "id": "emergency", "label": "Emergency Department", "description": "Emergency / A&E" },
+    { "id": "elective", "label": "Elective Admission", "description": "Planned admission" }
+  ],
+  "formFields": [
+    { "id": "patientName", "label": "Patient Name", "type": "text", "required": true },
+    { "id": "patientId", "label": "Patient ID / OPD Number", "type": "text", "required": false },
+    { "id": "arrivalSource", "label": "Arrival Source", "type": "select", "options": ["OPD", "Emergency Department", "Elective Admission"], "required": true },
+    { "id": "dateOfArrival", "label": "Date of Arrival", "type": "date", "required": true },
+    { "id": "timeOfArrival", "label": "Time of Arrival", "type": "time", "required": true },
+    { "id": "status", "label": "Status", "type": "select", "options": ["Pending assessment", "Assessed", "Admitted"], "required": true }
+  ],
+  "clerkingRecords": [
+    {
+      "id": "clerk-1",
+      "patientName": "James Okello",
+      "patientId": "OPD-2025-001",
+      "arrivalSource": "OPD",
+      "dateOfArrival": "2025-02-26",
+      "timeOfArrival": "08:15",
+      "status": "Pending assessment",
+      "recordedAt": "2025-02-26T08:20:00Z"
+    },
+    {
+      "id": "clerk-2",
+      "patientName": "Mary Akinyi",
+      "patientId": "EM-2025-012",
+      "arrivalSource": "Emergency Department",
+      "dateOfArrival": "2025-02-26",
+      "timeOfArrival": "07:30",
+      "status": "Assessed",
+      "recordedAt": "2025-02-26T07:45:00Z"
+    },
+    {
+      "id": "clerk-3",
+      "patientName": "Peter Ochieng",
+      "patientId": "EL-2025-003",
+      "arrivalSource": "Elective Admission",
+      "dateOfArrival": "2025-02-26",
+      "timeOfArrival": "06:00",
+      "status": "Admitted",
+      "recordedAt": "2025-02-26T06:30:00Z"
+    },
+    {
+      "id": "clerk-4",
+      "patientName": "Grace Mwangi",
+      "patientId": "OPD-2025-002",
+      "arrivalSource": "OPD",
+      "dateOfArrival": "2025-02-26",
+      "timeOfArrival": "09:00",
+      "status": "Pending assessment",
+      "recordedAt": "2025-02-26T09:05:00Z"
+    },
+    {
+      "id": "clerk-5",
+      "patientName": "David Kamau",
+      "patientId": null,
+      "arrivalSource": "Emergency Department",
+      "dateOfArrival": "2025-02-26",
+      "timeOfArrival": "10:45",
+      "status": "Pending assessment",
+      "recordedAt": "2025-02-26T10:50:00Z"
+    }
+  ]
+}
