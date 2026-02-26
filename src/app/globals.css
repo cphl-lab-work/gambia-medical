@@ -1,0 +1,12 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --sidebar-bg: #1e40af;
+  --sidebar-hover: #2563eb;
+}
+
+body {
+  @apply bg-slate-50 text-slate-900;
+}
