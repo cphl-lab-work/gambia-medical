@@ -323,7 +323,8 @@ export default function DashboardLayout({
       });
       setAuth({ name: user.name, role: user.role, email: user.email });
       setOpenDropdown(null);
-      router.refresh();
+      // Reload the page so role-dependent content (dashboard, nav, etc.) updates
+      window.location.href = pathname || "/dashboard";
     } catch {
       setSwitchError("Network error");
     } finally {

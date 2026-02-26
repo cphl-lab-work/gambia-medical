@@ -160,6 +160,18 @@ export default function ReceptionistDashboard() {
   const isCurrentMonth = calendarMonth.getMonth() === today.getMonth() && calendarMonth.getFullYear() === today.getFullYear();
   const todayDate = today.getDate();
 
+  const upcomingStats = (() => {
+    const todayStr = today.toISOString().slice(0, 10);
+    const weekEnd = new Date(today);
+    weekEnd.setDate(weekEnd.getDate() + 7);
+    const todayCount = upcomingAppointments.filter((a) => a.date === todayStr).length;
+    const thisWeekCount = upcomingAppointments.filter((a) => {
+      const d = new Date(a.date);
+      return d >= today && d < weekEnd;
+    }).length;
+    return { today: todayCount, thisWeek: thisWeekCount };
+  })();
+
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -315,14 +327,29 @@ export default function ReceptionistDashboard() {
               <h2 className="font-semibold text-slate-800">Upcoming Appointments</h2>
               <button type="button" className="p-1 text-slate-400 hover:text-slate-600">⋯</button>
             </div>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
+              <div className="rounded-lg bg-slate-50 border border-slate-100 px-3 py-2.5 text-center">
+                <p className="text-xl font-bold text-slate-800 tabular-nums">{upcomingStats.today}</p>
+                <p className="text-xs font-medium text-slate-500">Today</p>
+              </div>
+              <div className="rounded-lg bg-slate-50 border border-slate-100 px-3 py-2.5 text-center">
+                <p className="text-xl font-bold text-slate-800 tabular-nums">{upcomingStats.thisWeek}</p>
+                <p className="text-xs font-medium text-slate-500">This week</p>
+              </div>
+              <div className="rounded-lg bg-slate-50 border border-slate-100 px-3 py-2.5 text-center">
+                <p className="text-xl font-bold text-slate-800 tabular-nums">{upcomingAppointments.length}</p>
+                <p className="text-xs font-medium text-slate-500">Total upcoming</p>
+              </div>
+            </div>
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-slate-200 text-slate-500 text-left text-xs uppercase tracking-wider">
-                    <th className="pb-3 pr-4">Name ↓</th>
-                    <th className="pb-3 pr-4">Disease ↓</th>
-                    <th className="pb-3 pr-4">Date ↓</th>
-                    <th className="pb-3 pr-4">Time ↓</th>
+                    <th className="pb-3 pr-4">Name</th>
+                    <th className="pb-3 pr-4">Disease</th>
+                    <th className="pb-3 pr-4">Date</th>
+                    <th className="pb-3 pr-4">Time</th>
+                    <th className="pb-3 pr-4">Doctor</th>
                     <th className="pb-3">Details</th>
                   </tr>
                 </thead>
@@ -340,6 +367,12 @@ export default function ReceptionistDashboard() {
                       <td className="py-3 pr-4 text-slate-600">{apt.disease}</td>
                       <td className="py-3 pr-4 text-slate-600">{formatAppointmentDate(apt.date)}</td>
                       <td className="py-3 pr-4 text-slate-600">{apt.time}</td>
+                      <td className="py-3 pr-4">
+                        <span className="font-medium text-slate-800">{apt.doctorName}</span>
+                        {apt.department && (
+                          <span className="block text-xs text-slate-500">{apt.department}</span>
+                        )}
+                      </td>
                       <td className="py-3">
                         <Link href="#" className="text-blue-600 hover:text-blue-700 font-medium inline-flex items-center gap-1">
                           Details <span className="text-blue-500">›</span>
