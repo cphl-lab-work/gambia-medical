@@ -1,0 +1,42 @@
+{
+  "metrics": {
+    "totalPatients": 3550,
+    "totalPatientsChange": 150,
+    "totalDoctors": 100,
+    "totalDoctorsChange": 20,
+    "appointments": 1079,
+    "appointmentsChange": -5,
+    "totalEarnings": 55000,
+    "totalEarningsChange": 220
+  },
+  "patients": {
+    "total": 3550,
+    "byStatus": [
+      { "label": "Admitted", "value": 1340, "color": "#3b82f6" },
+      { "label": "Discharged", "value": 1550, "color": "#60a5fa" },
+      { "label": "Transferred", "value": 85, "color": "#93c5fd" },
+      { "label": "Followup", "value": 4880, "color": "#bfdbfe" }
+    ]
+  },
+  "employees": {
+    "total": 55000,
+    "byRole": [
+      { "role": "Doctors", "count": 600 },
+      { "role": "Nurses", "count": 500 },
+      { "role": "Volunteers", "count": 1600 },
+      { "role": "Pharmacists", "count": 1300 },
+      { "role": "Dietitians", "count": 500 },
+      { "role": "Others", "count": 100 }
+    ]
+  },
+  "topDoctors": [
+    { "id": "1", "name": "Nazar Becks", "department": "Gynecologist", "status": "Active", "avatar": null },
+    { "id": "2", "name": "John Darwin", "department": "Radiologist & ECG", "status": "Active", "avatar": null },
+    { "id": "3", "name": "Alex Hales", "department": "General Physician", "status": "InActive", "avatar": null }
+  ],
+  "newPatients": [
+    { "id": "1", "name": "Sarah", "department": "Gynecologist", "status": "Active", "avatar": null },
+    { "id": "2", "name": "Merina Farah", "department": "Radiologist & ECG", "status": "Active", "avatar": null },
+    { "id": "3", "name": "John Doe", "department": "General Physician", "status": "InActive", "avatar": null }
+  ]
+}
