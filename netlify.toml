@@ -1,6 +1,7 @@
-# Next.js on Netlify – official plugin handles build output and routing (fixes 404s)
+# Next.js on Netlify – plugin handles routing; publish must not be repo root (UI may set it to ".")
 [build]
   command = "npm run build"
+  publish = ".next"
 
 [[plugins]]
   package = "@netlify/plugin-nextjs"
