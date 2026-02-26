@@ -30,9 +30,10 @@ export async function GET() {
     }));
     return NextResponse.json({ records });
   } catch {
-    const records = (patientClerkingSeed as { clerkingRecords?: unknown[] }).clerkingRecords ?? [];
+    const raw = (patientClerkingSeed as { clerkingRecords?: unknown[] }).clerkingRecords ?? [];
+    const records = raw as Record<string, unknown>[];
     return NextResponse.json({
-      records: records.map((r: Record<string, unknown>) => ({
+      records: records.map((r) => ({
         id: r.id,
         patientName: r.patientName,
         patientId: r.patientId ?? null,
