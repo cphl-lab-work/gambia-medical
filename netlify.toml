@@ -1,0 +1,6 @@
+# Next.js on Netlify – official plugin handles build output and routing (fixes 404s)
+[build]
+  command = "npm run build"
+
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
