@@ -68,10 +68,7 @@ export default function MedicalClerkingPage() {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-xl font-semibold text-slate-800">Medical Clerking (Junior Doctor / Resident)</h1>
-            <p className="text-sm text-slate-500 mt-1">
-              Full medical history and physical examination. New encounter (Visit ID): HPC, PMH, current medications. Date/Time of presentation, Source of admission, Clinical notes.
-            </p>
+            <h1 className="text-xl font-semibold text-slate-800">Medical Clerking</h1>
           </div>
         </div>
 
