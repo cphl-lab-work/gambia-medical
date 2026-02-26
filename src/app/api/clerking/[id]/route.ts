@@ -72,3 +72,23 @@ export async function PUT(
     return NextResponse.json({ error: "Failed to update record" }, { status: 500 });
   }
 }
+
+export async function DELETE(
+  _request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const { id } = await params;
+  try {
+    const ds = await getConnection();
+    const repo = ds.getRepository(PatientClerking);
+    const existing = await repo.findOne({ where: { id } });
+    if (!existing) {
+      return NextResponse.json({ error: "Record not found" }, { status: 404 });
+    }
+    await repo.remove(existing);
+    return NextResponse.json({ ok: true });
+  } catch (e) {
+    console.error("Clerking DELETE error:", e);
+    return NextResponse.json({ error: "Failed to delete record" }, { status: 500 });
+  }
+}
