@@ -84,11 +84,13 @@ const LATEST_PATIENTS = [
 ];
 
 const UPCOMING_APPOINTMENTS = [
-  { id: "1", time: "12:20 PM", patientName: "Patient Ahmed" },
-  { id: "2", time: "12:40 PM", patientName: "Sarah Ali" },
-  { id: "3", time: "01:00 PM", patientName: "Omar Hassan" },
-  { id: "4", time: "07:40 PM", patientName: "Layla Mohamed" },
+  { id: "1", time: "12:20 PM", patientName: "Patient Ahmed", doctorName: "Dr. Nazar Becks" },
+  { id: "2", time: "12:40 PM", patientName: "Sarah Ali", doctorName: "Dr. Sarah Wilson" },
+  { id: "3", time: "01:00 PM", patientName: "Omar Hassan", doctorName: "Dr. Nazar Becks" },
+  { id: "4", time: "07:40 PM", patientName: "Layla Mohamed", doctorName: "Dr. John Darwin" },
 ];
+
+const UPCOMING_STATS = { today: 4, thisWeek: 18 };
 
 export default function NurseDashboard() {
   const totalAge = AGE_DISTRIBUTION.reduce((s, x) => s + x.value, 0);
@@ -96,7 +98,7 @@ export default function NurseDashboard() {
   return (
     <div className="flex flex-col lg:flex-row gap-6 lg:gap-8">
       <div className="flex-1 min-w-0 space-y-6">
-        <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between">
           <h1 className="text-xl font-semibold text-slate-800">Nurse Dashboard</h1>
           <Link href="/dashboard/triage" className="text-sm text-blue-600 hover:text-blue-700 font-medium">
             Record vitals →
@@ -134,8 +136,8 @@ export default function NurseDashboard() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
             }
-          />
-        </div>
+        />
+      </div>
 
         {/* Notifications */}
         <DashboardSection
@@ -169,49 +171,49 @@ export default function NurseDashboard() {
           </DashboardSection>
           <DashboardSection title="Patient Age Distribution">
             <DonutChart total={totalAge} segments={AGE_DISTRIBUTION} size={140} stroke={20} />
-          </DashboardSection>
-        </div>
+        </DashboardSection>
+      </div>
 
         {/* Latest Patients */}
-        <DashboardSection
+      <DashboardSection
           title="Latest Patients"
-          action={
+        action={
             <Link href="/dashboard/patients" className="text-sm text-blue-600 hover:text-blue-700 font-medium">
               See All
-            </Link>
-          }
-        >
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-slate-200 text-slate-500 text-left text-xs uppercase tracking-wider">
+          </Link>
+        }
+      >
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-slate-200 text-slate-500 text-left text-xs uppercase tracking-wider">
                   <th className="pb-3 pr-4">Name</th>
                   <th className="pb-3 pr-4">Gender</th>
                   <th className="pb-3 pr-4">Last Visit</th>
-                  <th className="pb-3">Status</th>
-                </tr>
-              </thead>
-              <tbody>
+                <th className="pb-3">Status</th>
+              </tr>
+            </thead>
+            <tbody>
                 {LATEST_PATIENTS.map((r) => (
-                  <tr key={r.id} className="border-b border-slate-100 last:border-0">
+                <tr key={r.id} className="border-b border-slate-100 last:border-0">
                     <td className="py-3 pr-4 font-medium text-slate-800">{r.name}</td>
                     <td className="py-3 pr-4 text-slate-600">{r.gender}</td>
                     <td className="py-3 pr-4 text-slate-600">{r.lastVisit}</td>
-                    <td className="py-3">
+                  <td className="py-3">
                       <span
                         className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium ${
                           r.status === "New" ? "bg-emerald-100 text-emerald-800" : "bg-blue-100 text-blue-800"
                         }`}
                       >
-                        {r.status}
-                      </span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </DashboardSection>
+                      {r.status}
+                    </span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </DashboardSection>
 
         {/* Write Prescription & Invite Assistants - two cards in a row */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -255,6 +257,17 @@ export default function NurseDashboard() {
             </Link>
           </div>
           <div className="p-4 space-y-4">
+            {/* Stats */}
+            <div className="grid grid-cols-2 gap-2">
+              <div className="rounded-lg bg-slate-50 border border-slate-100 px-3 py-2.5 text-center">
+                <p className="text-xl font-bold text-slate-800 tabular-nums">{UPCOMING_STATS.today}</p>
+                <p className="text-xs font-medium text-slate-500">Today</p>
+              </div>
+              <div className="rounded-lg bg-slate-50 border border-slate-100 px-3 py-2.5 text-center">
+                <p className="text-xl font-bold text-slate-800 tabular-nums">{UPCOMING_STATS.thisWeek}</p>
+                <p className="text-xs font-medium text-slate-500">This week</p>
+              </div>
+            </div>
             <div>
               <label htmlFor="nurse-clinic" className="block text-xs font-medium text-slate-500 mb-1">
                 Clinic
@@ -268,18 +281,19 @@ export default function NurseDashboard() {
               </select>
             </div>
             <div>
-              <p className="text-xs font-medium text-slate-500 mb-2">Afternoon Slots</p>
+              <p className="text-xs font-medium text-slate-500 mb-2">Slots · Doctor attending</p>
               <ul className="space-y-2">
                 {UPCOMING_APPOINTMENTS.map((apt) => (
                   <li
                     key={apt.id}
-                    className="flex items-center justify-between gap-2 py-2 px-3 rounded-lg bg-slate-50 hover:bg-slate-100"
+                    className="flex items-start justify-between gap-2 py-2.5 px-3 rounded-lg bg-slate-50 hover:bg-slate-100 border border-slate-100"
                   >
-                    <div className="min-w-0">
-                      <p className="text-sm font-medium text-slate-800 tabular-nums">{apt.time}</p>
-                      <p className="text-xs text-slate-500 truncate">{apt.patientName}</p>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-semibold text-slate-800 tabular-nums">{apt.time}</p>
+                      <p className="text-sm font-medium text-slate-700 truncate">{apt.patientName}</p>
+                      <p className="text-xs text-blue-600 font-medium mt-0.5 truncate">{apt.doctorName}</p>
                     </div>
-                    <div className="flex items-center gap-1 shrink-0">
+                    <div className="flex items-center gap-0.5 shrink-0">
                       <button
                         type="button"
                         className="p-1.5 rounded text-slate-400 hover:text-slate-600 hover:bg-slate-200"
