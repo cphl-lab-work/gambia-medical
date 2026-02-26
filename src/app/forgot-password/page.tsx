@@ -9,7 +9,7 @@ export default function ForgotPasswordPage() {
       <div
         className="absolute inset-0 bg-cover bg-center bg-no-repeat"
         style={{
-          backgroundImage: "url(https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?w=1920&q=80)",
+          backgroundImage: "url(/images/cover-hospital.png)",
           backgroundColor: "#1e293b",
         }}
       />

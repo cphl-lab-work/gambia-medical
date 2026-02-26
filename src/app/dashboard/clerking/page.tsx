@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import DashboardLayout from "@/components/DashboardLayout";
 import { getStoredAuth } from "@/helpers/local-storage";
+import { canCreate, canUpdate, canDelete } from "@/helpers/module-permissions";
 import Link from "next/link";
 
 const ARRIVAL_SOURCES = [
@@ -227,6 +228,23 @@ export default function ClerkingPage() {
     setMessage(null);
   };
 
+  const handleDelete = async (record: ClerkingRecord) => {
+    if (!isUuid(record.id)) return;
+    if (!confirm(`Delete clerking record for ${record.patientName}?`)) return;
+    try {
+      const res = await fetch(`/api/clerking/${record.id}`, { method: "DELETE" });
+      if (!res.ok) {
+        const data = await res.json();
+        setMessage({ type: "error", text: data.error || "Delete failed" });
+        return;
+      }
+      setRecords((prev) => prev.filter((r) => r.id !== record.id));
+      setMessage({ type: "success", text: "Record deleted." });
+    } catch {
+      setMessage({ type: "error", text: "Network error." });
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setMessage(null);
@@ -292,6 +310,10 @@ export default function ClerkingPage() {
     );
   }
 
+  const allowCreate = canCreate(auth.role, "patient_clerking");
+  const allowUpdate = canUpdate(auth.role, "patient_clerking");
+  const allowDelete = canDelete(auth.role, "patient_clerking");
+
   return (
     <DashboardLayout>
       <div className="space-y-6 relative">
@@ -303,16 +325,15 @@ export default function ClerkingPage() {
             </p>
           </div>
           <div className="flex items-center gap-3">
-            <button
-              type="button"
-              onClick={openPanelForNew}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700"
-            >
-              New patient clerking
-            </button>
-            <Link href="/dashboard" className="text-sm text-blue-600 hover:text-blue-700 font-medium">
-              ← Back to dashboard
-            </Link>
+            {allowCreate && (
+              <button
+                type="button"
+                onClick={openPanelForNew}
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700"
+              >
+                New patient clerking
+              </button>
+            )}
           </div>
         </div>
 
@@ -394,7 +415,7 @@ export default function ClerkingPage() {
                     <th className="pb-3 pr-4">Status</th>
                     <th className="pb-3 pr-4">Phone</th>
                     <th className="pb-3 pr-4">Recorded by</th>
-                    <th className="pb-3 w-20">Actions</th>
+                    <th className="pb-3 w-28">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -411,13 +432,15 @@ export default function ClerkingPage() {
                       <td className="py-3 pr-4 text-slate-600">{r.phone ?? "—"}</td>
                       <td className="py-3 pr-4 text-slate-500 text-xs">{r.recordedBy}</td>
                       <td className="py-3">
-                        <button
-                          type="button"
-                          onClick={() => openPanelForEdit(r)}
-                          className="text-blue-600 hover:text-blue-700 text-xs font-medium"
-                        >
-                          Edit
-                        </button>
+                        <span className="flex items-center gap-2">
+                          {allowUpdate && isUuid(r.id) && (
+                            <button type="button" onClick={() => openPanelForEdit(r)} className="text-blue-600 hover:text-blue-700 text-xs font-medium">Edit</button>
+                          )}
+                          {allowDelete && isUuid(r.id) && (
+                            <button type="button" onClick={() => handleDelete(r)} className="text-red-600 hover:text-red-700 text-xs font-medium">Delete</button>
+                          )}
+                          {!allowUpdate && !allowDelete && <span className="text-slate-400 text-xs">View only</span>}
+                        </span>
                       </td>
                     </tr>
                   ))}
