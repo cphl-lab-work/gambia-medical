@@ -169,7 +169,7 @@ const NAV: NavItem[] = [
   { href: "#", label: "Account", icon: icons.account },
 ];
 
-const SYSTEM: NavItem[] = [
+const SYSTEM: NavLinkItem[] = [
   { href: "/dashboard/recipe", label: "Recipe Management", icon: icons.recipe, roles: ["admin", "pharmacist"] },
   { href: "/dashboard/medicine", label: "Medicine Management", icon: icons.medicine, roles: ["admin", "pharmacist"] },
   { href: "/dashboard/users", label: "User Management", icon: icons.users, roles: ["admin"] },
@@ -295,7 +295,7 @@ export default function DashboardLayout({
   const [switchProfileOpen, setSwitchProfileOpen] = useState(false);
 
   const handleSwitchProfile = async (profile: (typeof SWITCH_PROFILES)[number]) => {
-    if (profile.role === auth.role && profile.email === auth.email) {
+    if (!auth || (profile.role === auth.role && profile.email === auth.email)) {
       setOpenDropdown(null);
       return;
     }
