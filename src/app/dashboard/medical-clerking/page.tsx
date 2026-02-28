@@ -90,7 +90,7 @@ export default function MedicalClerkingPage() {
   const [editingPatientId, setEditingPatientId] = useState<string | null>(null);
   const [newPatient, setNewPatient] = useState<Partial<PatientRecord>>({
     name: "",
-    age: "",
+    age: 0,
     gender: "",
     address: "",
     nextOfKin: "",
@@ -165,7 +165,7 @@ export default function MedicalClerkingPage() {
     setPendingEncId(generateEncId());
     setNewPatient({
       name: "",
-      age: "",
+      age: 0,
       gender: "",
       address: "",
       nextOfKin: "",
@@ -237,7 +237,7 @@ export default function MedicalClerkingPage() {
   const handleCreatePatient = async (e: React.FormEvent) => {
     e.preventDefault();
     const np = newPatient;
-    if (!np.name || np.age === "" || !np.gender) return;
+    if (!np.name || !np.age || !np.gender) return;
 
     const patientData: PatientRecord = {
       id: editingPatientId ?? `p${Date.now()}`,
@@ -280,7 +280,7 @@ export default function MedicalClerkingPage() {
       console.error("Failed to save patient:", err);
     }
 
-    setNewPatient({ name: "", age: "", gender: "", address: "", nextOfKin: "", phone: "", email: "", insuranceType: "self-pay", insurancePolicy: "" });
+    setNewPatient({ name: "", age: 0, gender: "", address: "", nextOfKin: "", phone: "", email: "", insuranceType: "self-pay", insurancePolicy: "" });
     setPendingEncId(null);
     setEditingPatientId(null);
     setShowNewPatientForm(false);
@@ -321,13 +321,6 @@ export default function MedicalClerkingPage() {
           </DashboardSection>
         </div>
 
-        <RecentPatients
-          patients={patients}
-          allowCreate={!allowCreate}
-          onAddPatient={openNewPatientPanel}
-          onEditPatient={openEditPatientPanel}
-          onViewPatient={setViewPatient}
-        />
 
 
       </div>
@@ -402,9 +395,9 @@ export default function MedicalClerkingPage() {
                       <input
                         type="number"
                         min={0}
-                        value={newPatient.age ?? ""}
+                        value={newPatient.age || ""}
                         onChange={(e) =>
-                          setNewPatient((p) => ({ ...p, age: e.target.value }))
+                          setNewPatient((p) => ({ ...p, age: Number(e.target.value) || 0 }))
                         }
                         className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
                         required
