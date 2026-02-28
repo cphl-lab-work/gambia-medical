@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import DashboardLayout from "@/components/DashboardLayout";
 import { getStoredAuth } from "@/helpers/local-storage";
@@ -26,6 +26,14 @@ interface PatientRecord {
 }
 
 export default function OPDPage() {
+  return (
+    <Suspense fallback={<div className="flex items-center justify-center min-h-screen text-slate-500">Loading…</div>}>
+      <OPDPageContent />
+    </Suspense>
+  );
+}
+
+function OPDPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const patientId = searchParams.get("patientId");

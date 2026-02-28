@@ -1058,7 +1058,7 @@ export default function ClerkingPage() {
                         <label className="block text-sm text-slate-600 mb-1">Date of birth</label>
                         <DatePicker
                           selected={form.dateOfBirth ? new Date(form.dateOfBirth) : null}
-                          onChange={(d) => setForm((f) => ({ ...f, dateOfBirth: d ? d.toISOString().slice(0, 10) : "" }))}
+                          onChange={(d: Date | null) => setForm((f) => ({ ...f, dateOfBirth: d ? d.toISOString().slice(0, 10) : "" }))}
                           dateFormat="yyyy-MM-dd"
                           placeholderText="Select date"
                           isClearable
