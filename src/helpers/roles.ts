@@ -1,5 +1,6 @@
 export const ROLES = [
   "admin",
+  "facility_admin",
   "doctor",
   "nurse",
   "receptionist",
@@ -17,6 +18,7 @@ export function isRole(s: string): s is Role {
 export function roleDisplayName(role: Role): string {
   const names: Record<Role, string> = {
     admin: "Admin",
+    facility_admin: "Facility Admin",
     doctor: "Doctor",
     nurse: "Nurse",
     receptionist: "Receptionist",

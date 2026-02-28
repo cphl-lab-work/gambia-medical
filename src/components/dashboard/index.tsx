@@ -1,6 +1,7 @@
 import type { ComponentType } from "react";
 import type { Role } from "@/helpers/roles";
 import AdminDashboard from "./AdminDashboard";
+import FacilityAdminDashboard from "./FacilityAdminDashboard";
 import DoctorDashboard from "./DoctorDashboard";
 import ReceptionistDashboard from "./ReceptionistDashboard";
 import NurseDashboard from "./NurseDashboard";
@@ -11,6 +12,7 @@ import BlankDashboard from "./BlankDashboard";
 
 export const roleDashboards: Record<Role, ComponentType<{ role?: string | null }>> = {
   admin: AdminDashboard,
+  facility_admin: FacilityAdminDashboard,
   doctor: DoctorDashboard,
   receptionist: ReceptionistDashboard,
   nurse: NurseDashboard,
@@ -26,6 +28,7 @@ export function getDashboardForRole(role: string | null) {
 }
 
 export { default as AdminDashboard } from "./AdminDashboard";
+export { default as FacilityAdminDashboard } from "./FacilityAdminDashboard";
 export { default as DoctorDashboard } from "./DoctorDashboard";
 export { default as ReceptionistDashboard } from "./ReceptionistDashboard";
 export { default as NurseDashboard } from "./NurseDashboard";

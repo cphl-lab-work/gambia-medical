@@ -7,6 +7,13 @@
     "role": "admin"
   },
   {
+    "id": "seed-facility-admin-1",
+    "email": "facilityadmin@ahmis.com",
+    "password": "facility123",
+    "name": "Facility Admin",
+    "role": "facility_admin"
+  },
+  {
     "id": "seed-doctor-1",
     "email": "doctor@ahmis.com",
     "password": "doctor123",

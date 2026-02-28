@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { DonutChart, DashboardSection } from "./DashboardCharts";
 import RecentPatients, { PatientRecord } from "@/components/patients/recent-patients";
+import NewPatientForm from "@/components/patients/new-patient-form";
 
 function SummaryCard({
   title,
@@ -93,6 +94,10 @@ export default function NurseDashboard() {
   const router = useRouter();
   const totalAge = AGE_DISTRIBUTION.reduce((s, x) => s + x.value, 0);
   const [patients, setPatients] = useState<PatientRecord[]>([]);
+  const [showNewPatientForm, setShowNewPatientForm] = useState(false);
+  const [editingPatientId, setEditingPatientId] = useState<string | null>(null);
+  const [pendingEncId, setPendingEncId] = useState<string | null>(null);
+  const [formInitialData, setFormInitialData] = useState<Partial<PatientRecord>>({});
 
   useEffect(() => {
     fetch("/api/patients")
@@ -185,9 +190,19 @@ export default function NurseDashboard() {
         {/* Recent Patients */}
         <RecentPatients
           patients={patients}
-          allowCreate={false}
-          onAddPatient={() => router.push("/dashboard/medical-clerking")}
-          onEditPatient={(p) => router.push(`/dashboard/medical-clerking?edit=${p.id}`)}
+          allowCreate={true}
+          onAddPatient={() => {
+            setEditingPatientId(null);
+            setPendingEncId(`MUL-OPD-${Math.floor(Math.random() * 90000) + 10000}`);
+            setFormInitialData({});
+            setShowNewPatientForm(true);
+          }}
+          onEditPatient={(p) => {
+            setEditingPatientId(p.id);
+            setPendingEncId(p.uhid);
+            setFormInitialData(p);
+            setShowNewPatientForm(true);
+          }}
           onViewPatient={(p) => router.push(`/dashboard/medical-clerking?view=${p.id}`)}
         />
 
@@ -305,6 +320,30 @@ export default function NurseDashboard() {
           </div>
         </div>
       </aside>
+      {showNewPatientForm && (
+        <NewPatientForm
+          editingPatientId={editingPatientId}
+          pendingEncId={pendingEncId}
+          initialData={formInitialData}
+          onSave={async (patientData) => {
+            try {
+              if (editingPatientId) {
+                await fetch("/api/patients", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ patient: patientData }) });
+                setPatients((prev) => prev.map((p) => (p.id === editingPatientId ? patientData : p)));
+              } else {
+                await fetch("/api/patients", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ patient: patientData }) });
+                setPatients((prev) => [...prev, patientData]);
+              }
+            } catch (err) {
+              console.error("Failed to save patient:", err);
+            }
+            setShowNewPatientForm(false);
+            setEditingPatientId(null);
+            setPendingEncId(null);
+          }}
+          onClose={() => { setShowNewPatientForm(false); setEditingPatientId(null); }}
+        />
+      )}
     </div>
   );
 }
