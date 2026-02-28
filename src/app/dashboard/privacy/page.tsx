@@ -38,7 +38,7 @@ export default function PrivacyPage() {
           <section>
             <h2 className="font-semibold text-slate-800 mb-2">Data we collect</h2>
             <p className="text-sm text-slate-600">
-              MediLab360 collects only the data necessary to provide care and run operations: your profile (name, email, role), activity logs for audit, and patient data you create or access as permitted by your role.
+              AHMIS collects only the data necessary to provide care and run operations: your profile (name, email, role), activity logs for audit, and patient data you create or access as permitted by your role.
             </p>
           </section>
           <section>

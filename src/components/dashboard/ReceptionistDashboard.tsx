@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import RecentPatients, { PatientRecord } from "@/components/patients/recent-patients";
 
 interface Statistic {
   label: string;
@@ -123,14 +125,23 @@ function formatAppointmentDate(dateStr: string) {
 }
 
 export default function ReceptionistDashboard() {
+  const router = useRouter();
   const [data, setData] = useState<ReceptionistData | null>(null);
   const [calendarMonth, setCalendarMonth] = useState(new Date());
+  const [patients, setPatients] = useState<PatientRecord[]>([]);
 
   useEffect(() => {
     fetch("/api/receptionist/dashboard")
       .then((r) => r.json())
       .then(setData)
       .catch(() => setData(FALLBACK));
+
+    fetch("/api/patients")
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.patients?.length) setPatients(data.patients);
+      })
+      .catch(() => {});
   }, []);
 
   const d = data ?? FALLBACK;
@@ -204,39 +215,6 @@ export default function ReceptionistDashboard() {
                   <p className="text-xs text-slate-500 mt-0.5">{stat.label}</p>
                 </div>
               ))}
-            </div>
-          </div>
-
-          {/* New Patients - simple data */}
-          <div className="rounded-xl border border-slate-200 bg-white p-5">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="font-semibold text-slate-800">New Patients</h2>
-              <button type="button" className="p-1 text-slate-400 hover:text-slate-600">⋯</button>
-            </div>
-            <p className="text-sm text-slate-500 mb-4">Simple clerking data: name, arrival source, time, status.</p>
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-slate-200 text-slate-500 text-left text-xs uppercase tracking-wider">
-                    <th className="pb-3 pr-4">Name</th>
-                    <th className="pb-3 pr-4">Arrival source</th>
-                    <th className="pb-3 pr-4">Time</th>
-                    <th className="pb-3">Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {newPatients.map((p) => (
-                    <tr key={p.id} className="border-b border-slate-100 last:border-0">
-                      <td className="py-3 pr-4 font-medium text-slate-800">{p.patientName}</td>
-                      <td className="py-3 pr-4 text-slate-600">{p.arrivalSource}</td>
-                      <td className="py-3 pr-4 text-slate-600">{p.arrivedAt.slice(11, 16)}</td>
-                      <td className="py-3">
-                        <span className="inline-flex items-center rounded-full bg-slate-100 px-2 py-0.5 text-xs text-slate-700">{p.status}</span>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
             </div>
           </div>
 
@@ -384,6 +362,15 @@ export default function ReceptionistDashboard() {
               </table>
             </div>
           </div>
+
+          {/* Recent Patients */}
+          <RecentPatients
+            patients={patients}
+            allowCreate={true}
+            onAddPatient={() => router.push("/dashboard/medical-clerking")}
+            onEditPatient={(p) => router.push(`/dashboard/medical-clerking?edit=${p.id}`)}
+            onViewPatient={(p) => router.push(`/dashboard/medical-clerking?view=${p.id}`)}
+          />
         </div>
 
         {/* Right column - sidebar */}

@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { getStoredAuth, setStoredAuth, clearStoredAuth } from "@/helpers/local-storage";
 
@@ -177,13 +178,13 @@ const SYSTEM: NavLinkItem[] = [
 
 /** Profiles available for quick switch (seed credentials); same roles as login. */
 const SWITCH_PROFILES: { role: string; name: string; email: string; password: string }[] = [
-  { role: "admin", name: "Admin User", email: "admin@medilab360.com", password: "admin123" },
-  { role: "doctor", name: "Nazar Becks", email: "doctor@medilab360.com", password: "doctor123" },
-  { role: "nurse", name: "Sarah Nurse", email: "nurse@medilab360.com", password: "nurse123" },
-  { role: "receptionist", name: "Mary Reception", email: "receptionist@medilab360.com", password: "reception123" },
-  { role: "accountant", name: "Tom Accountant", email: "accountant@medilab360.com", password: "account123" },
-  { role: "pharmacist", name: "Jane Pharmacist", email: "pharmacist@medilab360.com", password: "pharma123" },
-  { role: "lab_tech", name: "Dave LabTech", email: "labtech@medilab360.com", password: "lab123" },
+  { role: "admin", name: "Admin User", email: "admin@ahmis.com", password: "admin123" },
+  { role: "doctor", name: "Nazar Becks", email: "doctor@ahmis.com", password: "doctor123" },
+  { role: "nurse", name: "Sarah Nurse", email: "nurse@ahmis.com", password: "nurse123" },
+  { role: "receptionist", name: "Mary Reception", email: "receptionist@ahmis.com", password: "reception123" },
+  { role: "accountant", name: "Tom Accountant", email: "accountant@ahmis.com", password: "account123" },
+  { role: "pharmacist", name: "Jane Pharmacist", email: "pharmacist@ahmis.com", password: "pharma123" },
+  { role: "lab_tech", name: "Dave LabTech", email: "labtech@ahmis.com", password: "lab123" },
 ];
 
 function canSeeNavItem(item: NavItem, role: string | null): boolean {
@@ -351,10 +352,16 @@ export default function DashboardLayout({
         <div className="p-4 flex items-center justify-between shrink-0">
           {!sidebarCollapsed && (
             <div className="flex items-center gap-2">
-              <div className="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center text-white font-bold text-sm">
-                M
+              <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center overflow-hidden">
+                <Image
+                  src="/images/ahmis-logo.png"
+                  alt="AHMIS logo"
+                  width={24}
+                  height={24}
+                  className="object-contain"
+                />
               </div>
-              <span className="font-semibold">MediLab360</span>
+              <span className="font-semibold">AHMIS</span>
             </div>
           )}
           <button

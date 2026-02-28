@@ -14,56 +14,66 @@
     { "id": "timeOfArrival", "label": "Time of Arrival", "type": "time", "required": true },
     { "id": "status", "label": "Status", "type": "select", "options": ["Pending assessment", "Assessed", "Admitted"], "required": true }
   ],
-  "clerkingRecords": [
+  "countries": [
+    { "code": "UG", "name": "Uganda" },
+    { "code": "TZ", "name": "Tanzania" },
+    { "code": "KE", "name": "Kenya" },
+    { "code": "RW", "name": "Rwanda" },
+    { "code": "BI", "name": "Burundi" },
+    { "code": "SS", "name": "South Sudan" },
+    { "code": "CD", "name": "Democratic Republic of the Congo" },
+    { "code": "ET", "name": "Ethiopia" },
+    { "code": "NG", "name": "Nigeria" },
+    { "code": "ZA", "name": "South Africa" },
+    { "code": "GB", "name": "United Kingdom" },
+    { "code": "US", "name": "United States" },
+    { "code": "IN", "name": "India" },
+    { "code": "CN", "name": "China" },
+    { "code": "AE", "name": "United Arab Emirates" },
+    { "code": "DE", "name": "Germany" },
+    { "code": "FR", "name": "France" },
+    { "code": "CA", "name": "Canada" },
+    { "code": "BR", "name": "Brazil" },
+    { "code": "OTHER", "name": "Other" }
+  ],
+  "ugandaDistricts": [
     {
-      "id": "clerk-1",
-      "patientName": "James Okello",
-      "patientId": "OPD-2025-001",
-      "arrivalSource": "OPD",
-      "dateOfArrival": "2025-02-26",
-      "timeOfArrival": "08:15",
-      "status": "Pending assessment",
-      "recordedAt": "2025-02-26T08:20:00Z"
+      "name": "Kampala",
+      "subCounties": ["Central Division", "Nakawa Division", "Makindye Division", "Rubaga Division", "Kawempe Division"]
     },
     {
-      "id": "clerk-2",
-      "patientName": "Mary Akinyi",
-      "patientId": "EM-2025-012",
-      "arrivalSource": "Emergency Department",
-      "dateOfArrival": "2025-02-26",
-      "timeOfArrival": "07:30",
-      "status": "Assessed",
-      "recordedAt": "2025-02-26T07:45:00Z"
+      "name": "Wakiso",
+      "subCounties": ["Kira", "Nansana", "Kasangati", "Entebbe Municipality", "Makindye-Ssabagabo"]
     },
     {
-      "id": "clerk-3",
-      "patientName": "Peter Ochieng",
-      "patientId": "EL-2025-003",
-      "arrivalSource": "Elective Admission",
-      "dateOfArrival": "2025-02-26",
-      "timeOfArrival": "06:00",
-      "status": "Admitted",
-      "recordedAt": "2025-02-26T06:30:00Z"
+      "name": "Mukono",
+      "subCounties": ["Mukono Central", "Goma", "Namutumba", "Ntenjeru", "Kasawo"]
     },
     {
-      "id": "clerk-4",
-      "patientName": "Grace Mwangi",
-      "patientId": "OPD-2025-002",
-      "arrivalSource": "OPD",
-      "dateOfArrival": "2025-02-26",
-      "timeOfArrival": "09:00",
-      "status": "Pending assessment",
-      "recordedAt": "2025-02-26T09:05:00Z"
+      "name": "Mbarara",
+      "subCounties": ["Kakoba", "Nyamitanga", "Kamukuzi", "Bubaare", "Rubaya"]
     },
     {
-      "id": "clerk-5",
-      "patientName": "David Kamau",
-      "patientId": null,
-      "arrivalSource": "Emergency Department",
-      "dateOfArrival": "2025-02-26",
-      "timeOfArrival": "10:45",
-      "status": "Pending assessment",
-      "recordedAt": "2025-02-26T10:50:00Z"
+      "name": "Gulu",
+      "subCounties": ["Laroo", "Bardege-Layibi", "Pece-Laroo", "Awach", "Paicho"]
+    },
+    {
+      "name": "Mbale",
+      "subCounties": ["Industrial Division", "Northern Division", "Wanale Division", "Nyondo", "Busiu"]
     }
+  ],
+  "patients": [
+    { "id": "p1", "uhid": "UHID-2025-0001", "phone": "+255700111001", "name": "James Okello", "age": 34, "gender": "Male", "address": "Nairobi, Kenya", "nextOfKin": "Mary Okello", "nextOfKinPhone": "", "nextOfKinRelationship": "", "email": "", "arrivalSource": "OPD", "insuranceType": "insurance", "insurancePolicy": "NHIF-123456", "createdAt": "2025-01-10T09:00:00Z" },
+    { "id": "p2", "uhid": "UHID-2025-0002", "phone": "+255700222002", "name": "Mary Akinyi", "age": 29, "gender": "Female", "address": "Mombasa, Kenya", "nextOfKin": "John Akinyi", "nextOfKinPhone": "", "nextOfKinRelationship": "", "email": "", "arrivalSource": "Emergency Department", "insuranceType": "self-pay", "createdAt": "2025-01-15T11:30:00Z" },
+    { "id": "p3", "uhid": "UHID-2025-0003", "phone": "+255700333003", "name": "Peter Ochieng", "age": 52, "gender": "Male", "address": "Kisumu, Kenya", "nextOfKin": "Grace Ochieng", "nextOfKinPhone": "", "nextOfKinRelationship": "", "email": "", "arrivalSource": "OPD", "insuranceType": "insurance", "insurancePolicy": "AAR-789", "createdAt": "2025-01-22T08:15:00Z" },
+    { "id": "p4", "uhid": "UHID-2025-0004", "phone": "+255700444004", "name": "Grace Wambui", "age": 28, "gender": "Female", "address": "Nakuru, Kenya", "nextOfKin": "David Kamau", "nextOfKinPhone": "", "nextOfKinRelationship": "", "email": "", "arrivalSource": "Elective Admission", "insuranceType": "self-pay", "createdAt": "2025-02-03T14:45:00Z" },
+    { "id": "p5", "uhid": "UHID-2025-0005", "phone": "+255700555005", "name": "John Kamau", "age": 36, "gender": "Male", "address": "Eldoret, Kenya", "nextOfKin": "Lucy Kamau", "nextOfKinPhone": "", "nextOfKinRelationship": "", "email": "", "arrivalSource": "OPD", "insuranceType": "insurance", "insurancePolicy": "NHIF-654321", "createdAt": "2025-02-14T10:20:00Z" }
+  ],
+  "clerkingRecords": [
+    { "id": "clerk-1", "patientName": "James Okello", "patientId": "OPD-2025-001", "arrivalSource": "OPD", "dateOfArrival": "2025-02-26", "timeOfArrival": "08:15", "status": "Pending assessment", "phone": "+255712345678", "gender": "Male", "dateOfBirth": "1985-03-15", "recordedBy": "receptionist", "createdAt": "2025-02-26T08:20:00Z" },
+    { "id": "clerk-2", "patientName": "Mary Akinyi", "patientId": "EM-2025-012", "arrivalSource": "Emergency Department", "dateOfArrival": "2025-02-26", "timeOfArrival": "07:30", "status": "Assessed", "phone": "+254722111222", "gender": "Female", "dateOfBirth": "1990-07-22", "recordedBy": "nurse", "createdAt": "2025-02-26T07:45:00Z" },
+    { "id": "clerk-3", "patientName": "Peter Ochieng", "patientId": "EL-2025-003", "arrivalSource": "Elective Admission", "dateOfArrival": "2025-02-26", "timeOfArrival": "06:00", "status": "Admitted", "phone": null, "gender": "Male", "dateOfBirth": null, "recordedBy": "receptionist", "createdAt": "2025-02-26T06:30:00Z" },
+    { "id": "clerk-4", "patientName": "Grace Mwangi", "patientId": "OPD-2025-002", "arrivalSource": "OPD", "dateOfArrival": "2025-02-26", "timeOfArrival": "09:00", "status": "Pending assessment", "phone": "+255765432100", "gender": "Female", "dateOfBirth": "1988-11-03", "recordedBy": "receptionist", "createdAt": "2025-02-26T09:05:00Z" },
+    { "id": "clerk-5", "patientName": "David Kamau", "patientId": null, "arrivalSource": "Emergency Department", "dateOfArrival": "2025-02-26", "timeOfArrival": "10:45", "status": "Pending assessment", "phone": null, "gender": "Male", "dateOfBirth": null, "recordedBy": "nurse", "createdAt": "2025-02-26T10:50:00Z" }
   ]
 }

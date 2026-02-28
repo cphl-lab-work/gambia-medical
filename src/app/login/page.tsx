@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { setStoredAuth } from "@/helpers/local-storage";
@@ -16,13 +17,13 @@ const ROLES = [
 ] as const;
 
 const SEED_CREDENTIALS: Record<string, { email: string; password: string }> = {
-  admin: { email: "admin@medilab360.com", password: "admin123" },
-  doctor: { email: "doctor@medilab360.com", password: "doctor123" },
-  nurse: { email: "nurse@medilab360.com", password: "nurse123" },
-  receptionist: { email: "receptionist@medilab360.com", password: "reception123" },
-  accountant: { email: "accountant@medilab360.com", password: "account123" },
-  pharmacist: { email: "pharmacist@medilab360.com", password: "pharma123" },
-  lab_tech: { email: "labtech@medilab360.com", password: "lab123" },
+  admin: { email: "admin@ahmis.com", password: "admin123" },
+  doctor: { email: "doctor@ahmis.com", password: "doctor123" },
+  nurse: { email: "nurse@ahmis.com", password: "nurse123" },
+  receptionist: { email: "receptionist@ahmis.com", password: "reception123" },
+  accountant: { email: "accountant@ahmis.com", password: "account123" },
+  pharmacist: { email: "pharmacist@ahmis.com", password: "pharma123" },
+  lab_tech: { email: "labtech@ahmis.com", password: "lab123" },
 };
 
 export default function LoginPage() {
@@ -33,24 +34,15 @@ export default function LoginPage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const fillRole = (role: (typeof ROLES)[number]) => {
-    const c = SEED_CREDENTIALS[role];
-    if (c) {
-      setEmail(c.email);
-      setPassword(c.password);
-      setError("");
-    }
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const loginWithCredentials = async (loginEmail: string, loginPassword: string) => {
+    if (loading) return;
     setError("");
     setLoading(true);
     try {
       const res = await fetch("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ email: loginEmail, password: loginPassword }),
       });
       const data = await res.json();
       if (!res.ok) {
@@ -75,6 +67,20 @@ export default function LoginPage() {
     }
   };
 
+  const fillRole = async (role: (typeof ROLES)[number]) => {
+    const c = SEED_CREDENTIALS[role];
+    if (c) {
+      setEmail(c.email);
+      setPassword(c.password);
+      await loginWithCredentials(c.email, c.password);
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    await loginWithCredentials(email, password);
+  };
+
   return (
     <div className="min-h-screen relative flex items-center justify-center overflow-hidden">
       {/* Background: hospital/clinical image + dark overlay */}
@@ -87,27 +93,33 @@ export default function LoginPage() {
       />
       <div className="absolute inset-0 bg-slate-900/70" />
 
-      {/* Welcome text - bottom left */}
-      <div className="absolute bottom-8 left-8 right-8 max-w-md text-white z-10">
-        <h2 className="text-2xl sm:text-3xl font-bold mb-2">Welcome to MediLab360</h2>
+      {/* Welcome text - centered heading and subtitle (above form) */}
+      <div className="pointer-events-none absolute bottom-8 left-8 right-8 max-w-xl mx-auto text-center text-white z-30">
+        <h2 className="text-xl sm:text-2xl font-bold mb-2">
+          Africa Hospital Management Information System
+        </h2>
         <p className="text-sm sm:text-base text-white/90 leading-relaxed">
           Access patient records, manage appointments, coordinate care, and streamline hospital operations through our comprehensive management platform.
         </p>
       </div>
 
       {/* Centered form + branding */}
-      <div className="relative z-20 w-full max-w-md px-4 flex flex-col items-center">
+      <div className="relative z-20 w-full max-w-md px-4 flex flex-col items-center -mt-6 sm:-mt-10">
         {/* Emblem / logo */}
-        <div className="w-16 h-16 rounded-full bg-white/10 backdrop-blur flex items-center justify-center border-2 border-white/30 mb-3">
-          <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-          </svg>
+        <div className="w-16 h-16 rounded-full bg-white flex items-center justify-center border border-slate-200 mb-3 overflow-hidden">
+          <Image
+            src="/images/ahmis-logo.png"
+            alt="AHMIS logo"
+            width={56}
+            height={56}
+            className="object-contain"
+            priority
+          />
         </div>
-        <p className="text-2xl font-semibold text-white tracking-tight">MediLab360</p>
-        <p className="text-white/80 text-sm mb-6">Welcome Back</p>
+        <p className="text-2xl font-semibold text-white tracking-tight mb-6">AHMIS</p>
 
         {/* Form card */}
-        <div className="w-full bg-white rounded-xl shadow-2xl p-6 sm:p-8">
+        <div className="w-full bg-white rounded-xl shadow-2xl px-6 pt-4 pb-6 sm:px-8 sm:pt-6 sm:pb-8">
           <form onSubmit={handleSubmit} className="space-y-5">
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1.5">Username</label>

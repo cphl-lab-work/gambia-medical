@@ -1,4 +1,4 @@
-# MediLab360 – Medical Dashboard
+# AHMIS – Medical Dashboard
 
 Next.js app with TypeORM, PostgreSQL, role-based login, and a doctor dashboard. Login works with the database when connected, or with **seed data** when offline.
 
@@ -13,13 +13,13 @@ Next.js app with TypeORM, PostgreSQL, role-based login, and a doctor dashboard. 
 
 | Role         | Email                     | Password     |
 |-------------|----------------------------|-------------|
-| Admin       | admin@medilab360.com        | admin123    |
-| Doctor      | doctor@medilab360.com        | doctor123   |
-| Nurse       | nurse@medilab360.com         | nurse123    |
-| Receptionist| receptionist@medilab360.com  | reception123|
-| Accountant  | accountant@medilab360.com    | account123  |
-| Pharmacist  | pharmacist@medilab360.com    | pharma123   |
-| Lab Tech    | labtech@medilab360.com       | lab123      |
+| Admin       | admin@ahmis.com        | admin123    |
+| Doctor      | doctor@ahmis.com        | doctor123   |
+| Nurse       | nurse@ahmis.com         | nurse123    |
+| Receptionist| receptionist@ahmis.com  | reception123|
+| Accountant  | accountant@ahmis.com    | account123  |
+| Pharmacist  | pharmacist@ahmis.com    | pharma123   |
+| Lab Tech    | labtech@ahmis.com       | lab123      |
 
 ## Setup
 

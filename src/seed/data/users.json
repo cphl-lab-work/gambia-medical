@@ -1,63 +1,63 @@
 [
   {
     "id": "seed-admin-1",
-    "email": "admin@medilab360.com",
+    "email": "admin@ahmis.com",
     "password": "admin123",
     "name": "Admin User",
     "role": "admin"
   },
   {
     "id": "seed-doctor-1",
-    "email": "doctor@medilab360.com",
+    "email": "doctor@ahmis.com",
     "password": "doctor123",
     "name": "Nazar Becks",
     "role": "doctor"
   },
   {
     "id": "seed-doctor-2",
-    "email": "john.darwin@medilab360.com",
+    "email": "john.darwin@ahmis.com",
     "password": "doctor123",
     "name": "John Darwin",
     "role": "doctor"
   },
   {
     "id": "seed-doctor-3",
-    "email": "alex.hales@medilab360.com",
+    "email": "alex.hales@ahmis.com",
     "password": "doctor123",
     "name": "Alex Hales",
     "role": "doctor"
   },
   {
     "id": "seed-nurse-1",
-    "email": "nurse@medilab360.com",
+    "email": "nurse@ahmis.com",
     "password": "nurse123",
     "name": "Sarah Nurse",
     "role": "nurse"
   },
   {
     "id": "seed-receptionist-1",
-    "email": "receptionist@medilab360.com",
+    "email": "receptionist@ahmis.com",
     "password": "reception123",
     "name": "Mary Reception",
     "role": "receptionist"
   },
   {
     "id": "seed-accountant-1",
-    "email": "accountant@medilab360.com",
+    "email": "accountant@ahmis.com",
     "password": "account123",
     "name": "Tom Accountant",
     "role": "accountant"
   },
   {
     "id": "seed-pharmacist-1",
-    "email": "pharmacist@medilab360.com",
+    "email": "pharmacist@ahmis.com",
     "password": "pharma123",
     "name": "Jane Pharmacist",
     "role": "pharmacist"
   },
   {
     "id": "seed-labtech-1",
-    "email": "labtech@medilab360.com",
+    "email": "labtech@ahmis.com",
     "password": "lab123",
     "name": "Dave LabTech",
     "role": "lab_tech"
