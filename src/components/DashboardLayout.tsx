@@ -125,14 +125,14 @@ function isNavGroup(item: NavItem): item is NavGroupItem {
 
 const NAV: NavItem[] = [
   { href: "/dashboard", label: "Dashboard", icon: icons.dashboard },
-  { href: "/dashboard/clerking", label: "Patient clerking", icon: icons.clerking, roles: ["receptionist", "nurse"] },
-  { href: "/dashboard/triage", label: "Triage & Registration", icon: icons.triage, roles: ["receptionist", "nurse"] },
-  { href: "/dashboard/medical-clerking", label: "Medical clerking", icon: icons.medicalClerking, roles: ["admin", "doctor"] },
-  { href: "/dashboard/doctors", label: "Doctors", icon: icons.doctors, roles: ["admin", "doctor", "receptionist"] },
-  { href: "/dashboard/staff", label: "Staff", icon: icons.staff, roles: ["admin"] },
-  { href: "/dashboard/patients", label: "Patients", icon: icons.patients, roles: ["admin", "doctor", "receptionist", "nurse"] },
-  { href: "/dashboard/appointments", label: "Appointments", icon: icons.appointments, roles: ["admin", "doctor", "receptionist", "nurse", "accountant"] },
-  { href: "/dashboard/departments", label: "Departments", icon: icons.departments, roles: ["admin", "doctor"] },
+  { href: "/dashboard/clerking", label: "Patient clerking", icon: icons.clerking, roles: ["receptionist", "nurse", "facility_admin"] },
+  { href: "/dashboard/triage", label: "Triage & Registration", icon: icons.triage, roles: ["receptionist", "nurse", "facility_admin"] },
+  { href: "/dashboard/medical-clerking", label: "Medical clerking", icon: icons.medicalClerking, roles: ["admin", "doctor", "facility_admin"] },
+  { href: "/dashboard/doctors", label: "Doctors", icon: icons.doctors, roles: ["admin", "doctor", "receptionist", "facility_admin"] },
+  { href: "/dashboard/staff", label: "Staff", icon: icons.staff, roles: ["admin", "facility_admin"] },
+  { href: "/dashboard/patients", label: "Patients", icon: icons.patients, roles: ["admin", "doctor", "receptionist", "nurse", "facility_admin"] },
+  { href: "/dashboard/appointments", label: "Appointments", icon: icons.appointments, roles: ["admin", "doctor", "receptionist", "nurse", "accountant", "facility_admin"] },
+  { href: "/dashboard/departments", label: "Departments", icon: icons.departments, roles: ["admin", "doctor", "facility_admin"] },
   { href: "/dashboard/lab-orders", label: "Laboratory", icon: icons.laboratory, roles: ["admin", "doctor", "lab_tech"] },
   { href: "/dashboard/imaging", label: "Imaging (RIS)", icon: icons.imaging, roles: ["admin", "doctor", "lab_tech"] },
   {
@@ -148,12 +148,12 @@ const NAV: NavItem[] = [
       { href: "/dashboard/pharmacy/point-of-sale", label: "Point of Sale" },
     ],
   },
-  { href: "/dashboard/billing", label: "Billing", icon: icons.billing, roles: ["admin", "accountant"] },
-  { href: "/dashboard/reports", label: "Reports", icon: icons.reports, roles: ["admin", "accountant", "receptionist", "doctor", "nurse", "pharmacist", "lab_tech"] },
+  { href: "/dashboard/billing", label: "Billing", icon: icons.billing, roles: ["admin", "accountant", "facility_admin"] },
+  { href: "/dashboard/reports", label: "Reports", icon: icons.reports, roles: ["admin", "accountant", "receptionist", "doctor", "nurse", "pharmacist", "lab_tech", "facility_admin"] },
   {
     label: "Human Resources",
     icon: icons.hr,
-    roles: ["admin"],
+    roles: ["admin", "facility_admin"],
     children: [
       { href: "/dashboard/hr/attendance", label: "Attendance" },
       { href: "/dashboard/hr/time-tracker", label: "Time Tracker" },
@@ -179,6 +179,7 @@ const SYSTEM: NavLinkItem[] = [
 /** Profiles available for quick switch (seed credentials); same roles as login. */
 const SWITCH_PROFILES: { role: string; name: string; email: string; password: string }[] = [
   { role: "admin", name: "Admin User", email: "admin@ahmis.com", password: "admin123" },
+  { role: "facility_admin", name: "Facility Admin", email: "facilityadmin@ahmis.com", password: "facility123" },
   { role: "doctor", name: "Nazar Becks", email: "doctor@ahmis.com", password: "doctor123" },
   { role: "nurse", name: "Sarah Nurse", email: "nurse@ahmis.com", password: "nurse123" },
   { role: "receptionist", name: "Mary Reception", email: "receptionist@ahmis.com", password: "reception123" },

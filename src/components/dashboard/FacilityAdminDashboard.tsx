@@ -65,7 +65,7 @@ interface PatientClerking {
   }[];
 }
 
-interface ReceptionistData {
+interface FacilityAdminData {
   statistics: Statistic[];
   schedule: ScheduleItem[];
   upcomingAppointments: Appointment[];
@@ -75,7 +75,7 @@ interface ReceptionistData {
   patientClerking?: PatientClerking;
 }
 
-const FALLBACK: ReceptionistData = {
+const FALLBACK: FacilityAdminData = {
   statistics: [
     { label: "Expected Appointments", value: 24, icon: "appointments" },
     { label: "New Patients", value: 5, icon: "newPatients" },
@@ -129,9 +129,9 @@ function generateEncId(): string {
   return `MUL-OPD-${Math.floor(Math.random() * 90000) + 10000}`;
 }
 
-export default function ReceptionistDashboard() {
+export default function FacilityAdminDashboard() {
   const router = useRouter();
-  const [data, setData] = useState<ReceptionistData | null>(null);
+  const [data, setData] = useState<FacilityAdminData | null>(null);
   const [calendarMonth, setCalendarMonth] = useState(new Date());
   const [patients, setPatients] = useState<PatientRecord[]>([]);
   const [showNewPatientForm, setShowNewPatientForm] = useState(false);
@@ -194,8 +194,9 @@ export default function ReceptionistDashboard() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <div className="space-y-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Left column - main content */}
+        <div className="lg:col-span-2 space-y-6">
           {/* Statistic */}
           <div className="rounded-xl border border-slate-200 bg-white p-5">
             <div className="flex items-center justify-between mb-4">
@@ -223,6 +224,87 @@ export default function ReceptionistDashboard() {
                   <p className="text-xs text-slate-500 mt-0.5">{stat.label}</p>
                 </div>
               ))}
+            </div>
+          </div>
+
+          {/* Phase 1: Patient Clerking (Admission & Assessment) */}
+          <div className="rounded-xl border border-slate-200 bg-white p-5">
+            <div className="flex items-center justify-between mb-2">
+              <h2 className="font-semibold text-slate-800">{patientClerking?.phase ?? "Phase 1: Patient Clerking (Admission & Assessment)"}</h2>
+              <button type="button" className="p-1 text-slate-400 hover:text-slate-600">⋯</button>
+            </div>
+            <p className="text-sm text-slate-500 mb-4">
+              {patientClerking?.triggerDescription ?? "Patient arrives via OPD, Emergency Department, or Elective Admission."}
+            </p>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-slate-200 text-slate-500 text-left text-xs uppercase tracking-wider">
+                    <th className="pb-3 pr-4">Name</th>
+                    <th className="pb-3 pr-4">ID</th>
+                    <th className="pb-3 pr-4">Arrival source</th>
+                    <th className="pb-3 pr-4">Date</th>
+                    <th className="pb-3 pr-4">Time</th>
+                    <th className="pb-3">Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {clerkingRecords.map((r: { id: string; patientName: string; patientId: string | null; arrivalSource: string; dateOfArrival: string; timeOfArrival: string; status: string }) => (
+                    <tr key={r.id} className="border-b border-slate-100 last:border-0">
+                      <td className="py-3 pr-4 font-medium text-slate-800">{r.patientName}</td>
+                      <td className="py-3 pr-4 text-slate-600">{r.patientId ?? "—"}</td>
+                      <td className="py-3 pr-4 text-slate-600">{r.arrivalSource}</td>
+                      <td className="py-3 pr-4 text-slate-600">{formatAppointmentDate(r.dateOfArrival)}</td>
+                      <td className="py-3 pr-4 text-slate-600">{r.timeOfArrival}</td>
+                      <td className="py-3">
+                        <span className="inline-flex items-center rounded-full bg-amber-50 px-2 py-0.5 text-xs text-amber-800">{r.status}</span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* Schedule */}
+          <div className="rounded-xl border border-slate-200 bg-white p-5">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="font-semibold text-slate-800">Schedule</h2>
+              <button type="button" className="p-1 text-slate-400 hover:text-slate-600">⋯</button>
+            </div>
+            <div className="overflow-x-auto">
+              <div className="min-w-[400px]">
+                <div className="flex border-b border-slate-200 pb-2 mb-2">
+                  <div className="w-12 shrink-0 text-xs text-slate-500" />
+                  {HOURS.map((h) => (
+                    <div key={h} className="flex-1 text-center text-xs text-slate-500">{h}:00</div>
+                  ))}
+                </div>
+                {DAYS.map((day) => (
+                  <div key={day} className="flex items-center gap-1 mb-2 min-h-[36px]">
+                    <span className="w-12 shrink-0 text-sm font-medium text-slate-600">{day}</span>
+                    <div className="flex-1 relative h-8 bg-slate-50 rounded">
+                      {schedule
+                        .filter((s) => s.day === day)
+                        .map((s) => {
+                          const { left, width } = timeToPosition(s.start, s.end);
+                          const colorClass =
+                            s.color === "blue" ? "bg-blue-200" : s.color === "pink" ? "bg-pink-200" : "bg-slate-200";
+                          return (
+                            <div
+                              key={s.id}
+                              className={`absolute top-1 h-6 rounded ${colorClass} text-xs flex items-center justify-center truncate px-1`}
+                              style={{ left, width, minWidth: "40px" }}
+                              title={s.title}
+                            >
+                              {s.title}
+                            </div>
+                          );
+                        })}
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
 
@@ -308,6 +390,85 @@ export default function ReceptionistDashboard() {
             }}
             onViewPatient={(p) => router.push(`/dashboard/medical-clerking?view=${p.id}`)}
           />
+        </div>
+
+        {/* Right column - sidebar */}
+        <div className="space-y-6">
+          {/* Calendar */}
+          <div className="rounded-xl border border-slate-200 bg-white p-5">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="font-semibold text-slate-800">
+                {calendarMonth.toLocaleDateString("en-GB", { month: "long", year: "numeric" })}
+              </h2>
+              <div className="flex gap-1">
+                <button
+                  type="button"
+                  onClick={() => setCalendarMonth((m) => new Date(m.getFullYear(), m.getMonth() - 1))}
+                  className="p-1.5 rounded hover:bg-slate-100 text-slate-600"
+                >
+                  ‹
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setCalendarMonth((m) => new Date(m.getFullYear(), m.getMonth() + 1))}
+                  className="p-1.5 rounded hover:bg-slate-100 text-slate-600"
+                >
+                  ›
+                </button>
+              </div>
+            </div>
+            <div className="grid grid-cols-7 gap-1 text-center text-xs">
+              {["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"].map((w) => (
+                <div key={w} className="text-slate-500 font-medium py-1">{w}</div>
+              ))}
+              {calendarDays.map((day, i) => (
+                <div
+                  key={i}
+                  className={`py-1.5 rounded ${
+                    day !== null && isCurrentMonth && day === todayDate
+                      ? "bg-blue-100 text-blue-700 font-semibold"
+                      : "text-slate-700 hover:bg-slate-50"
+                  }`}
+                >
+                  {day ?? ""}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Activity */}
+          <div className="rounded-xl border border-slate-200 bg-white p-5">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="font-semibold text-slate-800">Activity</h2>
+              <select className="text-xs border border-slate-200 rounded px-2 py-1 text-slate-600 bg-white">
+                <option>Today</option>
+              </select>
+            </div>
+            <div className="flex flex-col items-center justify-center py-6">
+              <p className="text-4xl font-bold text-slate-800">{activityPercent}%</p>
+            </div>
+          </div>
+
+          {/* Last Notifications */}
+          <div className="rounded-xl border border-slate-200 bg-white p-5">
+            <h2 className="font-semibold text-slate-800 mb-4">Last Notifications</h2>
+            <ul className="space-y-3">
+              {notifications.map((n) => (
+                <li key={n.id} className="flex gap-3">
+                  <div className="w-10 h-10 rounded-full bg-slate-200 flex items-center justify-center text-slate-600 font-medium text-sm shrink-0">
+                    {n.patientName.charAt(0)}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-medium text-slate-800">{n.patientName}</p>
+                    <p className="text-xs text-slate-500">{n.message}</p>
+                    <p className="text-xs text-slate-400 mt-0.5">
+                      {formatAppointmentDate(n.date)} at {n.time}
+                    </p>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </div>
         </div>
       </div>
       {showNewPatientForm && (

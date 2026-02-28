@@ -33,6 +33,30 @@ export default function OPDPage() {
   );
 }
 
+const OPD_STEPS = ["Triage", "Consult", "Lab Order", "Results", "Meds", "Follow-up"] as const;
+type OPDStep = (typeof OPD_STEPS)[number];
+
+const TRIAGE_CATEGORIES = ["Green", "Yellow", "Orange", "Red"] as const;
+
+interface TriageForm {
+  weight: string;
+  height: string;
+  temp: string;
+  bpSys: string;
+  bpDia: string;
+  pulse: string;
+  rr: string;
+  spo2: string;
+  pain: string;
+  triageCategory: string;
+  notes: string;
+}
+
+const EMPTY_TRIAGE: TriageForm = {
+  weight: "", height: "", temp: "", bpSys: "", bpDia: "",
+  pulse: "", rr: "", spo2: "", pain: "", triageCategory: "Green", notes: "",
+};
+
 function OPDPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -40,26 +64,20 @@ function OPDPageContent() {
 
   const [auth, setAuth] = useState<{ role: string } | null>(null);
   const [patient, setPatient] = useState<PatientRecord | null>(null);
+  const [activeStep, setActiveStep] = useState<OPDStep>("Triage");
+  const [triage, setTriage] = useState<TriageForm>(EMPTY_TRIAGE);
 
   useEffect(() => {
     const a = getStoredAuth();
-    if (!a) {
-      router.replace("/login");
-      return;
-    }
-    if (!canRead(a.role, "medical_clerking")) {
-      router.replace("/dashboard");
-      return;
-    }
+    if (!a) { router.replace("/login"); return; }
+    if (!canRead(a.role, "medical_clerking")) { router.replace("/dashboard"); return; }
     setAuth({ role: a.role });
   }, [router]);
 
   useEffect(() => {
     if (!patientId) return;
     const stored = sessionStorage.getItem(`opd_patient_${patientId}`);
-    if (stored) {
-      setPatient(JSON.parse(stored));
-    }
+    if (stored) setPatient(JSON.parse(stored));
   }, [patientId]);
 
   if (!auth) {
@@ -87,142 +105,207 @@ function OPDPageContent() {
     );
   }
 
+  const encId = `ENC-${patient.uhid?.replace(/\D/g, "").slice(-5) || "00000"}`;
+
   return (
     <DashboardLayout>
       <div className="space-y-6">
-        <div className="flex items-center gap-3">
-          <button
-            type="button"
-            onClick={() => router.push("/dashboard/medical-clerking")}
-            className="p-2 rounded-lg hover:bg-slate-100 text-slate-500"
-            aria-label="Back"
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-            </svg>
-          </button>
-          <div>
-            <h1 className="text-xl font-bold text-slate-800">OPD Encounter</h1>
-            <p className="text-sm text-slate-500">Outpatient department visit</p>
-          </div>
-        </div>
-
-        <div className="bg-white rounded-xl border border-slate-200 p-6">
-          <h2 className="text-base font-semibold text-slate-800 mb-4">Patient Information</h2>
-          <div className="flex items-center gap-4 mb-6">
-            <div className="w-12 h-12 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-700 text-lg font-bold">
-              {patient.name.charAt(0).toUpperCase()}
-            </div>
+        {/* OPD Flow header */}
+        <div className="bg-white rounded-xl border border-slate-200 px-6 py-4">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
-              <h3 className="text-base font-semibold text-slate-800">{patient.name}</h3>
-              <p className="text-sm text-slate-500">{patient.uhid}</p>
-            </div>
-            <span className="ml-auto inline-flex items-center rounded-full bg-blue-50 px-3 py-1 text-xs font-medium text-blue-700">
-              OPD
-            </span>
-          </div>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm">
-            <div>
-              <p className="text-xs font-medium text-slate-400 uppercase tracking-wide">Age</p>
-              <p className="text-slate-800 mt-0.5">{patient.age}</p>
-            </div>
-            <div>
-              <p className="text-xs font-medium text-slate-400 uppercase tracking-wide">Gender</p>
-              <p className="text-slate-800 mt-0.5">{patient.gender}</p>
-            </div>
-            <div>
-              <p className="text-xs font-medium text-slate-400 uppercase tracking-wide">Phone</p>
-              <p className="text-slate-800 mt-0.5">{patient.phone || "—"}</p>
-            </div>
-            <div>
-              <p className="text-xs font-medium text-slate-400 uppercase tracking-wide">Insurance</p>
-              <p className="text-slate-800 mt-0.5">
-                {patient.insuranceType === "insurance" ? (patient.insurancePolicy ?? "Insurance") : "Self-pay"}
+              <h1 className="text-lg font-bold text-slate-800">OPD Flow</h1>
+              <p className="text-xs text-slate-400 mt-0.5">
+                Registration &rarr; triage &rarr; consult &rarr; labs &rarr; results &rarr; meds &rarr; follow-up
               </p>
             </div>
+            <nav className="flex items-center gap-1 flex-wrap">
+              {OPD_STEPS.map((step) => (
+                <button
+                  key={step}
+                  type="button"
+                  onClick={() => setActiveStep(step)}
+                  className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
+                    activeStep === step
+                      ? "bg-blue-600 text-white"
+                      : "text-slate-600 hover:bg-slate-100"
+                  }`}
+                >
+                  {step}
+                </button>
+              ))}
+            </nav>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div className="bg-white rounded-xl border border-slate-200 p-6">
-            <h2 className="text-base font-semibold text-slate-800 mb-4">Vital Signs</h2>
-            <div className="grid grid-cols-2 gap-4">
-              {[
-                { label: "Blood Pressure", placeholder: "e.g. 120/80 mmHg" },
-                { label: "Temperature", placeholder: "e.g. 36.6 °C" },
-                { label: "Pulse Rate", placeholder: "e.g. 72 bpm" },
-                { label: "Respiratory Rate", placeholder: "e.g. 18 /min" },
-                { label: "SpO2", placeholder: "e.g. 98%" },
-                { label: "Weight", placeholder: "e.g. 70 kg" },
-              ].map((v) => (
-                <div key={v.label}>
-                  <label className="block text-xs font-medium text-slate-500 mb-1">{v.label}</label>
+        {/* Step content */}
+        {activeStep === "Triage" && (
+          <div className="space-y-6">
+            {/* Section heading + patient info */}
+            <div className="flex items-start justify-between">
+              <div>
+                <h2 className="text-2xl font-bold text-slate-800">Triage</h2>
+                <p className="text-sm text-slate-500 mt-0.5">
+                  {patient.name} &middot; {patient.uhid} &middot; {encId}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => router.push("/dashboard/medical-clerking")}
+                className="rounded-lg border border-slate-200 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+              >
+                Back
+              </button>
+            </div>
+
+            {/* Triage form */}
+            <div className="bg-white rounded-xl border border-slate-200 p-6 space-y-5">
+              {/* Row 1 */}
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+                <div>
+                  <label className="block text-xs font-medium text-slate-500 mb-1">Weight (kg)</label>
                   <input
-                    type="text"
-                    placeholder={v.placeholder}
+                    type="number"
+                    value={triage.weight}
+                    onChange={(e) => setTriage((t) => ({ ...t, weight: e.target.value }))}
                     className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
                   />
                 </div>
-              ))}
+                <div>
+                  <label className="block text-xs font-medium text-slate-500 mb-1">Height (cm)</label>
+                  <input
+                    type="number"
+                    value={triage.height}
+                    onChange={(e) => setTriage((t) => ({ ...t, height: e.target.value }))}
+                    className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-slate-500 mb-1">Temp (°C)</label>
+                  <input
+                    type="number"
+                    step="0.1"
+                    value={triage.temp}
+                    onChange={(e) => setTriage((t) => ({ ...t, temp: e.target.value }))}
+                    className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
+                  />
+                </div>
+                <div className="col-span-2 sm:col-span-1 lg:col-span-1">
+                  <label className="block text-xs font-medium text-slate-500 mb-1">BP</label>
+                  <div className="flex gap-2">
+                    <input
+                      type="number"
+                      placeholder="Sys"
+                      value={triage.bpSys}
+                      onChange={(e) => setTriage((t) => ({ ...t, bpSys: e.target.value }))}
+                      className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
+                    />
+                    <input
+                      type="number"
+                      placeholder="Dia"
+                      value={triage.bpDia}
+                      onChange={(e) => setTriage((t) => ({ ...t, bpDia: e.target.value }))}
+                      className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-slate-500 mb-1">Pulse</label>
+                  <input
+                    type="number"
+                    value={triage.pulse}
+                    onChange={(e) => setTriage((t) => ({ ...t, pulse: e.target.value }))}
+                    className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
+                  />
+                </div>
+              </div>
+
+              {/* Row 2 */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                <div>
+                  <label className="block text-xs font-medium text-slate-500 mb-1">RR</label>
+                  <input
+                    type="number"
+                    value={triage.rr}
+                    onChange={(e) => setTriage((t) => ({ ...t, rr: e.target.value }))}
+                    className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-slate-500 mb-1">SpO2</label>
+                  <input
+                    type="number"
+                    value={triage.spo2}
+                    onChange={(e) => setTriage((t) => ({ ...t, spo2: e.target.value }))}
+                    className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-slate-500 mb-1">Pain (0–10)</label>
+                  <input
+                    type="number"
+                    min={0}
+                    max={10}
+                    value={triage.pain}
+                    onChange={(e) => setTriage((t) => ({ ...t, pain: e.target.value }))}
+                    className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-slate-500 mb-1">Triage category</label>
+                  <select
+                    value={triage.triageCategory}
+                    onChange={(e) => setTriage((t) => ({ ...t, triageCategory: e.target.value }))}
+                    className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm bg-white"
+                  >
+                    {TRIAGE_CATEGORIES.map((c) => (
+                      <option key={c} value={c}>{c}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              {/* Notes */}
+              <div>
+                <label className="block text-xs font-medium text-slate-500 mb-1">Notes</label>
+                <textarea
+                  rows={4}
+                  value={triage.notes}
+                  onChange={(e) => setTriage((t) => ({ ...t, notes: e.target.value }))}
+                  className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
+                />
+              </div>
+
+              {/* Actions */}
+              <div className="flex items-center gap-3 pt-1">
+                <button
+                  type="button"
+                  onClick={() => {
+                    /* save triage */
+                  }}
+                  className="rounded-lg bg-emerald-600 px-5 py-2.5 text-sm font-medium text-white hover:bg-emerald-700"
+                >
+                  Save triage
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setActiveStep("Consult")}
+                  className="rounded-lg bg-blue-600 px-5 py-2.5 text-sm font-medium text-white hover:bg-blue-700"
+                >
+                  Next: Consult
+                </button>
+              </div>
             </div>
           </div>
+        )}
 
-          <div className="bg-white rounded-xl border border-slate-200 p-6">
-            <h2 className="text-base font-semibold text-slate-800 mb-4">Chief Complaint</h2>
-            <textarea
-              rows={4}
-              placeholder="Describe the patient's chief complaint..."
-              className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm resize-none"
-            />
-            <h2 className="text-base font-semibold text-slate-800 mt-6 mb-4">History of Present Illness</h2>
-            <textarea
-              rows={4}
-              placeholder="Describe the history of present illness..."
-              className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm resize-none"
-            />
+        {activeStep !== "Triage" && (
+          <div className="bg-white rounded-xl border border-slate-200 p-10 text-center">
+            <p className="text-slate-500 text-sm">
+              <span className="font-semibold text-slate-700">{activeStep}</span> — coming soon.
+            </p>
           </div>
-        </div>
-
-        <div className="bg-white rounded-xl border border-slate-200 p-6">
-          <h2 className="text-base font-semibold text-slate-800 mb-4">Diagnosis &amp; Plan</h2>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-xs font-medium text-slate-500 mb-1">Provisional Diagnosis</label>
-              <textarea
-                rows={3}
-                placeholder="Enter provisional diagnosis..."
-                className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm resize-none"
-              />
-            </div>
-            <div>
-              <label className="block text-xs font-medium text-slate-500 mb-1">Treatment Plan</label>
-              <textarea
-                rows={3}
-                placeholder="Enter treatment plan..."
-                className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm resize-none"
-              />
-            </div>
-          </div>
-        </div>
-
-        <div className="flex justify-end gap-3">
-          <button
-            type="button"
-            onClick={() => router.push("/dashboard/medical-clerking")}
-            className="rounded-lg border border-slate-200 px-5 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50"
-          >
-            Cancel
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              router.push("/dashboard/medical-clerking");
-            }}
-            className="rounded-lg bg-emerald-600 px-5 py-2.5 text-sm font-medium text-white hover:bg-emerald-700"
-          >
-            Save Encounter
-          </button>
-        </div>
+        )}
       </div>
     </DashboardLayout>
   );

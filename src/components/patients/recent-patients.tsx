@@ -241,7 +241,6 @@ export default function RecentPatients({
           <thead>
             <tr className="border-b border-slate-200 text-slate-500 text-left text-xs uppercase tracking-wider">
               <th className="pb-3 pt-4 px-4">Name</th>
-              <th className="pb-3 pt-4 px-4">ID number</th>
               <th className="pb-3 pt-4 px-4">Phone</th>
               <th className="pb-3 pt-4 px-4">Next of Kin</th>
               <th className="pb-3 pt-4 px-4">Registration Date</th>
@@ -251,15 +250,17 @@ export default function RecentPatients({
           <tbody>
             {filtered.length === 0 ? (
               <tr>
-                <td colSpan={6} className="py-8 text-center text-slate-500">
+                <td colSpan={5} className="py-8 text-center text-slate-500">
                   {searchQuery ? "No patients match your search." : "No patients yet."}
                 </td>
               </tr>
             ) : (
               filtered.map((p) => (
                 <tr key={p.id} className="border-b border-slate-100 last:border-0 hover:bg-slate-50/50">
-                  <td className="py-3 px-4 font-medium text-slate-800">{p.name}</td>
-                  <td className="py-3 px-4 text-slate-600">{p.uhid}</td>
+                  <td className="py-3 px-4">
+                    <div className="font-medium text-slate-800">{p.name}</div>
+                    <div className="text-xs text-slate-500">{p.uhid}</div>
+                  </td>
                   <td className="py-3 px-4 text-slate-600">{p.phone}</td>
                   <td className="py-3 px-4 text-slate-600">
                     {p.nextOfKin ? `${p.nextOfKin}${p.nextOfKinRelationship ? ` (${p.nextOfKinRelationship})` : ""}` : "—"}
