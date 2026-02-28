@@ -13,7 +13,7 @@ const FALLBACK = {
   revenueChange: 8,
   pendingInvoices: 18,
   pendingChange: -2,
-  paidToday: 32,
+  paidToday: 630000,
   paidChange: 5,
   byDept: [
     { label: "OPD", value: 62000, color: "#3b82f6" },
@@ -78,10 +78,10 @@ export default function BillingPage() {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <MetricCard title="Revenue today" value={`$${d.revenueToday.toLocaleString()}`} change={d.revenueChange} icon={<span className="text-lg">$</span>} />
+          <MetricCard title="Revenue today (UGX)" value={`UGX ${d.revenueToday.toLocaleString()}`} change={d.revenueChange} icon={<span className="text-xs font-semibold">UGX</span>} />
           <MetricCard title="Pending invoices" value={d.pendingInvoices} change={d.pendingChange} icon={<span className="text-lg">📄</span>} />
-          <MetricCard title="Paid today" value={d.paidToday} change={d.paidChange} icon={<span className="text-lg">✓</span>} />
-          <MetricCard title="Revenue by dept" value={`$${(totalDept / 1000).toFixed(0)}k`} change={d.revenueChange} icon={<span className="text-lg">📊</span>} />
+          <MetricCard title="Paid today (UGX)" value={`UGX ${d.paidToday.toLocaleString()}`} change={d.paidChange} icon={<span className="text-xs font-semibold">UGX</span>} />
+          <MetricCard title="Revenue by dept (UGX)" value={`UGX ${(totalDept / 1000).toFixed(0)}k`} change={d.revenueChange} icon={<span className="text-xs font-semibold">UGX</span>} />
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

@@ -128,7 +128,7 @@ export default function ReportsPage() {
             <p className="text-sm text-slate-500 mb-4">Financial transactions: payments, invoices, refunds.</p>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
               <MetricCard title="Total transactions" value={tx.totalCount.toLocaleString()} change={tx.totalChange} icon={<span className="text-lg">📄</span>} />
-              <MetricCard title="Total amount (UGX)" value={`${(tx.totalAmount / 1000).toFixed(0)}k`} change={tx.amountChange} icon={<span className="text-lg">$</span>} />
+              <MetricCard title="Total amount (UGX)" value={`${(tx.totalAmount / 1000).toFixed(0)}k`} change={tx.amountChange} icon={<span className="text-xs font-semibold">UGX</span>} />
               <MetricCard title="By type (count)" value={totalTx.toLocaleString()} change={tx.totalChange} icon={<span className="text-lg">📋</span>} />
             </div>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -213,7 +213,7 @@ export default function ReportsPage() {
           >
             <p className="text-sm text-slate-500 mb-4">Revenue and pending by department.</p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-              <MetricCard title="Revenue (UGX)" value={`${(bill.revenue / 1000).toFixed(0)}k`} change={10} icon={<span className="text-lg">$</span>} />
+              <MetricCard title="Revenue (UGX)" value={`${(bill.revenue / 1000).toFixed(0)}k`} change={10} icon={<span className="text-xs font-semibold">UGX</span>} />
               <MetricCard title="Pending (UGX)" value={`${(bill.pending / 1000).toFixed(0)}k`} change={-3} icon={<span className="text-lg">⏳</span>} />
             </div>
             <BarChart items={bill.byDept} max={maxBill} barColor="bg-teal-600" />

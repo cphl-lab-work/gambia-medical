@@ -1,7 +1,10 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { DonutChart, DashboardSection } from "./DashboardCharts";
+import RecentPatients, { PatientRecord } from "@/components/patients/recent-patients";
 
 function SummaryCard({
   title,
@@ -77,12 +80,6 @@ const AGE_DISTRIBUTION = [
   { label: "1-18", value: 15, color: "#fb923c" },
 ];
 
-const LATEST_PATIENTS = [
-  { id: "1", name: "Mohamed Ahmed", gender: "Male", lastVisit: "15 Jan. 2023", status: "New" as const },
-  { id: "2", name: "Samah Hassan", gender: "Female", lastVisit: "12 Jan. 2023", status: "Follow-up" as const },
-  { id: "3", name: "Ahmed Mohamed", gender: "Male", lastVisit: "10 Jan. 2023", status: "New" as const },
-];
-
 const UPCOMING_APPOINTMENTS = [
   { id: "1", time: "12:20 PM", patientName: "Patient Ahmed", doctorName: "Dr. Nazar Becks" },
   { id: "2", time: "12:40 PM", patientName: "Sarah Ali", doctorName: "Dr. Sarah Wilson" },
@@ -93,7 +90,18 @@ const UPCOMING_APPOINTMENTS = [
 const UPCOMING_STATS = { today: 4, thisWeek: 18 };
 
 export default function NurseDashboard() {
+  const router = useRouter();
   const totalAge = AGE_DISTRIBUTION.reduce((s, x) => s + x.value, 0);
+  const [patients, setPatients] = useState<PatientRecord[]>([]);
+
+  useEffect(() => {
+    fetch("/api/patients")
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.patients?.length) setPatients(data.patients);
+      })
+      .catch(() => {});
+  }, []);
 
   return (
     <div className="flex flex-col lg:flex-row gap-6 lg:gap-8">
@@ -174,46 +182,14 @@ export default function NurseDashboard() {
         </DashboardSection>
       </div>
 
-        {/* Latest Patients */}
-      <DashboardSection
-          title="Latest Patients"
-        action={
-            <Link href="/dashboard/patients" className="text-sm text-blue-600 hover:text-blue-700 font-medium">
-              See All
-          </Link>
-        }
-      >
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-slate-200 text-slate-500 text-left text-xs uppercase tracking-wider">
-                  <th className="pb-3 pr-4">Name</th>
-                  <th className="pb-3 pr-4">Gender</th>
-                  <th className="pb-3 pr-4">Last Visit</th>
-                <th className="pb-3">Status</th>
-              </tr>
-            </thead>
-            <tbody>
-                {LATEST_PATIENTS.map((r) => (
-                <tr key={r.id} className="border-b border-slate-100 last:border-0">
-                    <td className="py-3 pr-4 font-medium text-slate-800">{r.name}</td>
-                    <td className="py-3 pr-4 text-slate-600">{r.gender}</td>
-                    <td className="py-3 pr-4 text-slate-600">{r.lastVisit}</td>
-                  <td className="py-3">
-                      <span
-                        className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium ${
-                          r.status === "New" ? "bg-emerald-100 text-emerald-800" : "bg-blue-100 text-blue-800"
-                        }`}
-                      >
-                      {r.status}
-                    </span>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </DashboardSection>
+        {/* Recent Patients */}
+        <RecentPatients
+          patients={patients}
+          allowCreate={false}
+          onAddPatient={() => router.push("/dashboard/medical-clerking")}
+          onEditPatient={(p) => router.push(`/dashboard/medical-clerking?edit=${p.id}`)}
+          onViewPatient={(p) => router.push(`/dashboard/medical-clerking?view=${p.id}`)}
+        />
 
         {/* Write Prescription & Invite Assistants - two cards in a row */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

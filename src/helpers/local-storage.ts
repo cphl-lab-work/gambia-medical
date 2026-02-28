@@ -10,6 +10,7 @@ const PATIENT_DATA_ACCESS_KEY = `${PREFIX}patient_data_access`;
 const USERS_KEY = `${PREFIX}users`;
 const SYNC_QUEUE_KEY = `${PREFIX}sync_queue`;
 const LAST_SYNC_KEY = `${PREFIX}last_sync`;
+const CLERKING_RECORDS_KEY = `${PREFIX}clerking_records`;
 
 export interface StoredAuth {
   userId: string;
@@ -147,4 +148,42 @@ export function getLastSync(): number | null {
 export function setLastSync(ts: number): void {
   if (typeof window === "undefined") return;
   localStorage.setItem(LAST_SYNC_KEY, String(ts));
+}
+
+/** Patient clerking (admission) record. */
+export interface ClerkingRecord {
+  id: string;
+  patientName: string;
+  patientId: string | null;
+  arrivalSource: string;
+  dateOfArrival: string;
+  timeOfArrival: string;
+  status: string;
+  phone?: string | null;
+  gender?: string | null;
+  dateOfBirth?: string | null;
+  nationality?: string | null;
+  district?: string | null;
+  country?: string | null;
+  address?: string | null;
+  email?: string | null;
+  recordedBy: string;
+  createdAt: string;
+}
+
+export function getClerkingRecords(): ClerkingRecord[] {
+  if (typeof window === "undefined") return [];
+  try {
+    const raw = localStorage.getItem(CLERKING_RECORDS_KEY);
+    if (!raw) return [];
+    const arr = JSON.parse(raw);
+    return Array.isArray(arr) ? arr : [];
+  } catch {
+    return [];
+  }
+}
+
+export function setClerkingRecords(records: ClerkingRecord[]): void {
+  if (typeof window === "undefined") return;
+  localStorage.setItem(CLERKING_RECORDS_KEY, JSON.stringify(records));
 }

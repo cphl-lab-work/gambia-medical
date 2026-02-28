@@ -36,13 +36,13 @@ export default function ContactPage() {
           <section>
             <h2 className="font-semibold text-slate-800 mb-2">System administrator</h2>
             <p className="text-sm text-slate-600">Dr. Sarah Johnson</p>
-            <a href="mailto:admin@medilab360.com" className="text-sm text-blue-600 hover:underline">admin@medilab360.com</a>
+            <a href="mailto:admin@ahmis.com" className="text-sm text-blue-600 hover:underline">admin@ahmis.com</a>
             <p className="text-sm text-slate-600 mt-1"><a href="tel:+256700123456" className="text-blue-600 hover:underline">+256 700 123 456</a></p>
           </section>
           <section>
             <h2 className="font-semibold text-slate-800 mb-2">IT support</h2>
-            <p className="text-sm text-slate-600">For technical issues with MediLab360.</p>
-            <a href="mailto:support@medilab360.com" className="text-sm text-blue-600 hover:underline">support@medilab360.com</a>
+            <p className="text-sm text-slate-600">For technical issues with AHMIS.</p>
+            <a href="mailto:support@ahmis.com" className="text-sm text-blue-600 hover:underline">support@ahmis.com</a>
           </section>
         </div>
       </div>
