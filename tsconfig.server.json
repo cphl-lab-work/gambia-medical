@@ -6,5 +6,5 @@
     "noEmit": false,
     "outDir": "./dist"
   },
-  "include": ["src/database/**/*.ts", "src/seed/**/*.ts", "src/helpers/**/*.ts"]
+  "include": ["src/database/**/*.ts", "src/migrations/**/*.ts", "src/seed/**/*.ts", "src/helpers/**/*.ts", "scripts/**/*.ts"]
 }

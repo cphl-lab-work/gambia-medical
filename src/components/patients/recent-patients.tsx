@@ -4,6 +4,7 @@ import { useState, useRef, useEffect, useMemo } from "react";
 import Select from "react-select";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import ViewPatientPanel from "./view-patient-panel";
 
 export interface PatientRecord {
   id: string;
@@ -30,7 +31,7 @@ interface RecentPatientsProps {
   allowCreate?: boolean;
   onAddPatient: () => void;
   onEditPatient: (patient: PatientRecord) => void;
-  onViewPatient: (patient: PatientRecord) => void;
+  onViewPatient?: (patient: PatientRecord) => void;
 }
 
 const INSURANCE_OPTS = [
@@ -79,6 +80,7 @@ export default function RecentPatients({
   const [sortBy, setSortBy] = useState<"name" | "id">("name");
   const [filterOpen, setFilterOpen] = useState(false);
   const [actionRowId, setActionRowId] = useState<string | null>(null);
+  const [viewPatient, setViewPatient] = useState<PatientRecord | null>(null);
   const filterRef = useRef<HTMLDivElement | null>(null);
   const actionRef = useRef<HTMLDivElement | null>(null);
 
@@ -288,7 +290,7 @@ export default function RecentPatients({
                           <button
                             type="button"
                             onClick={() => {
-                              onViewPatient(p);
+                              setViewPatient(p);
                               setActionRowId(null);
                             }}
                             className="block w-full px-3 py-2 text-left text-sm text-slate-700 hover:bg-slate-50"
@@ -326,6 +328,17 @@ export default function RecentPatients({
           </tbody>
         </table>
       </div>
+
+      {viewPatient && (
+        <ViewPatientPanel
+          patient={viewPatient}
+          onClose={() => setViewPatient(null)}
+          onEdit={(p) => {
+            setViewPatient(null);
+            onEditPatient(p);
+          }}
+        />
+      )}
     </div>
   );
 }

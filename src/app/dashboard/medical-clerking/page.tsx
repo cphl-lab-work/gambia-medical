@@ -219,6 +219,8 @@ export default function MedicalClerkingPage() {
           p.name.toLowerCase().includes(q)
       );
     }
+
+    
     if (patientsFilterInsurance) {
       out = out.filter((p) => p.insuranceType === patientsFilterInsurance);
     }
@@ -698,7 +700,7 @@ export default function MedicalClerkingPage() {
             aria-hidden
           />
           <div
-            className="fixed top-0 right-0 bottom-0 w-full max-w-md bg-white shadow-2xl z-50 flex flex-col"
+            className="fixed top-0 right-0 bottom-0 w-full max-w-md lg:left-56 lg:right-0 lg:max-w-none bg-white shadow-2xl z-50 flex flex-col"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="shrink-0 flex items-center justify-between border-b border-slate-200 px-6 py-4">
