@@ -5,7 +5,7 @@ export class CreateTransactionLogs1730000000025 implements MigrationInterface {
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`
-      CREATE TABLE "transaction_logs" (
+      CREATE TABLE IF NOT EXISTS "transaction_logs" (
         "id"            uuid          NOT NULL DEFAULT gen_random_uuid(),
         "trans_id"      varchar(100)  NOT NULL,
         "status"        varchar(30)   NOT NULL,
@@ -18,15 +18,15 @@ export class CreateTransactionLogs1730000000025 implements MigrationInterface {
       )
     `);
 
-    await queryRunner.query(`CREATE INDEX "IDX_txn_logs_trans_id" ON "transaction_logs" ("trans_id")`);
-    await queryRunner.query(`CREATE INDEX "IDX_txn_logs_status"   ON "transaction_logs" ("status")`);
-    await queryRunner.query(`CREATE INDEX "IDX_txn_logs_created_at" ON "transaction_logs" ("created_at")`);
+    await queryRunner.query(`CREATE INDEX IF NOT EXISTS "IDX_txn_logs_trans_id" ON "transaction_logs" ("trans_id")`);
+    await queryRunner.query(`CREATE INDEX IF NOT EXISTS "IDX_txn_logs_status"   ON "transaction_logs" ("status")`);
+    await queryRunner.query(`CREATE INDEX IF NOT EXISTS "IDX_txn_logs_created_at" ON "transaction_logs" ("created_at")`);
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.query(`DROP INDEX "IDX_txn_logs_created_at"`);
-    await queryRunner.query(`DROP INDEX "IDX_txn_logs_status"`);
-    await queryRunner.query(`DROP INDEX "IDX_txn_logs_trans_id"`);
-    await queryRunner.query(`DROP TABLE "transaction_logs"`);
+    await queryRunner.query(`DROP INDEX IF EXISTS "IDX_txn_logs_created_at"`);
+    await queryRunner.query(`DROP INDEX IF EXISTS "IDX_txn_logs_status"`);
+    await queryRunner.query(`DROP INDEX IF EXISTS "IDX_txn_logs_trans_id"`);
+    await queryRunner.query(`DROP TABLE IF EXISTS "transaction_logs"`);
   }
 }

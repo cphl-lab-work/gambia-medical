@@ -4,39 +4,37 @@ export class EnhanceRoles1730000000020 implements MigrationInterface {
   name = "EnhanceRoles1730000000020";
 
   public async up(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.query(`
-      ALTER TABLE "roles"
-        ADD COLUMN "code"           varchar(20),
-        ADD COLUMN "permissions"    text,
-        ADD COLUMN "is_system_role" boolean NOT NULL DEFAULT false,
-        ADD COLUMN "status"         varchar(20) NOT NULL DEFAULT 'active',
-        ADD COLUMN "deleted_at"     TIMESTAMP
-    `);
+    await queryRunner.query(`ALTER TABLE "roles" ADD COLUMN IF NOT EXISTS "code" varchar(20)`);
+    await queryRunner.query(`ALTER TABLE "roles" ADD COLUMN IF NOT EXISTS "permissions" text`);
+    await queryRunner.query(`ALTER TABLE "roles" ADD COLUMN IF NOT EXISTS "is_system_role" boolean NOT NULL DEFAULT false`);
+    await queryRunner.query(`ALTER TABLE "roles" ADD COLUMN IF NOT EXISTS "status" varchar(20) NOT NULL DEFAULT 'active'`);
+    await queryRunner.query(`ALTER TABLE "roles" ADD COLUMN IF NOT EXISTS "deleted_at" TIMESTAMP`);
 
     await queryRunner.query(`
       UPDATE "roles" SET
         "is_system_role" = true,
-        "code" = UPPER("name")
+        "code" = COALESCE("code", UPPER("name"))
+      WHERE "is_system_role" = false OR "code" IS NULL
     `);
 
-    await queryRunner.query(`
-      ALTER TABLE "roles"
-        ADD CONSTRAINT "UQ_roles_code" UNIQUE ("code")
-    `);
+    const hasUq = await queryRunner.query(`SELECT 1 FROM pg_constraint WHERE conname = 'UQ_roles_code'`);
+    if (!(Array.isArray(hasUq) && hasUq.length > 0)) {
+      await queryRunner.query(`ALTER TABLE "roles" ADD CONSTRAINT "UQ_roles_code" UNIQUE ("code")`);
+    }
 
-    await queryRunner.query(`CREATE INDEX "IDX_roles_status" ON "roles" ("status")`);
+    await queryRunner.query(`CREATE INDEX IF NOT EXISTS "IDX_roles_status" ON "roles" ("status")`);
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.query(`DROP INDEX "IDX_roles_status"`);
-    await queryRunner.query(`ALTER TABLE "roles" DROP CONSTRAINT "UQ_roles_code"`);
+    await queryRunner.query(`DROP INDEX IF EXISTS "IDX_roles_status"`);
+    await queryRunner.query(`ALTER TABLE "roles" DROP CONSTRAINT IF EXISTS "UQ_roles_code"`);
     await queryRunner.query(`
       ALTER TABLE "roles"
-        DROP COLUMN "deleted_at",
-        DROP COLUMN "status",
-        DROP COLUMN "is_system_role",
-        DROP COLUMN "permissions",
-        DROP COLUMN "code"
+        DROP COLUMN IF EXISTS "deleted_at",
+        DROP COLUMN IF EXISTS "status",
+        DROP COLUMN IF EXISTS "is_system_role",
+        DROP COLUMN IF EXISTS "permissions",
+        DROP COLUMN IF EXISTS "code"
     `);
   }
 }

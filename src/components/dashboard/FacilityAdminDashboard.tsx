@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import RecentPatients, { PatientRecord } from "@/components/patients/recent-patients";
 import NewPatientForm from "@/components/patients/new-patient-form";
+import { getStoredPatients, setStoredPatients } from "@/helpers/local-storage";
 
 interface Statistic {
   label: string;
@@ -145,12 +146,21 @@ export default function FacilityAdminDashboard() {
       .then(setData)
       .catch(() => setData(FALLBACK));
 
-    fetch("/api/patients")
-      .then((r) => r.json())
-      .then((data) => {
-        if (data.patients?.length) setPatients(data.patients);
-      })
-      .catch(() => {});
+    const stored = getStoredPatients();
+    if (stored.length > 0) {
+      setPatients(stored as PatientRecord[]);
+    } else {
+      fetch("/api/patients")
+        .then((r) => r.json())
+        .then((data) => {
+          const list = (data.patients ?? []) as PatientRecord[];
+          if (list.length) {
+            setStoredPatients(list);
+            setPatients(list);
+          }
+        })
+        .catch(() => {});
+    }
   }, []);
 
   const d = data ?? FALLBACK;
@@ -476,17 +486,15 @@ export default function FacilityAdminDashboard() {
           editingPatientId={editingPatientId}
           pendingEncId={pendingEncId}
           initialData={formInitialData}
-          onSave={async (patientData) => {
-            try {
-              if (editingPatientId) {
-                await fetch("/api/patients", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ patient: patientData }) });
-                setPatients((prev) => prev.map((p) => (p.id === editingPatientId ? patientData : p)));
-              } else {
-                await fetch("/api/patients", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ patient: patientData }) });
-                setPatients((prev) => [...prev, patientData]);
-              }
-            } catch (err) {
-              console.error("Failed to save patient:", err);
+          onSave={(patientData) => {
+            if (editingPatientId) {
+              const next = patients.map((p) => (p.id === editingPatientId ? patientData : p));
+              setStoredPatients(next);
+              setPatients(next);
+            } else {
+              const next = [...patients, patientData];
+              setStoredPatients(next);
+              setPatients(next);
             }
             setShowNewPatientForm(false);
             setEditingPatientId(null);

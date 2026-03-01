@@ -5,7 +5,7 @@ export class CreateMenuItems1730000000006 implements MigrationInterface {
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`
-      CREATE TABLE "menu_items" (
+      CREATE TABLE IF NOT EXISTS "menu_items" (
         "id"              uuid        NOT NULL DEFAULT gen_random_uuid(),
         "menu_precision"  varchar(50),
         "name"            varchar(100) NOT NULL,
@@ -25,18 +25,13 @@ export class CreateMenuItems1730000000006 implements MigrationInterface {
       )
     `);
 
-    await queryRunner.query(`
-      CREATE INDEX "IDX_menu_items_parent_id" ON "menu_items" ("parent_id")
-    `);
-
-    await queryRunner.query(`
-      CREATE INDEX "IDX_menu_items_sort_order" ON "menu_items" ("sort_order")
-    `);
+    await queryRunner.query(`CREATE INDEX IF NOT EXISTS "IDX_menu_items_parent_id" ON "menu_items" ("parent_id")`);
+    await queryRunner.query(`CREATE INDEX IF NOT EXISTS "IDX_menu_items_sort_order" ON "menu_items" ("sort_order")`);
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.query(`DROP INDEX "IDX_menu_items_sort_order"`);
-    await queryRunner.query(`DROP INDEX "IDX_menu_items_parent_id"`);
-    await queryRunner.query(`DROP TABLE "menu_items"`);
+    await queryRunner.query(`DROP INDEX IF EXISTS "IDX_menu_items_sort_order"`);
+    await queryRunner.query(`DROP INDEX IF EXISTS "IDX_menu_items_parent_id"`);
+    await queryRunner.query(`DROP TABLE IF EXISTS "menu_items"`);
   }
 }

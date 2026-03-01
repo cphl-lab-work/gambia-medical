@@ -7,6 +7,8 @@ import { getStoredAuth } from "@/helpers/local-storage";
 import { canRead, canCreate, canUpdate, canDelete } from "@/helpers/module-permissions";
 import { MetricCard, BarChart, DashboardSection } from "@/components/dashboard/DashboardCharts";
 import Link from "next/link";
+import RecentStaff, { StaffRecord } from "@/components/staff/recent-staff";
+import NewStaffForm from "@/components/staff/new-staff-form";
 
 const FALLBACK = {
   total: 120,
@@ -24,6 +26,7 @@ export default function StaffPage() {
   const router = useRouter();
   const [auth, setAuth] = useState<{ role: string } | null>(null);
   const [stats, setStats] = useState<typeof FALLBACK | null>(null);
+  const [showNewStaff, setShowNewStaff] = useState(false);
 
   useEffect(() => {
     const a = getStoredAuth();
@@ -83,11 +86,28 @@ export default function StaffPage() {
             {allowDelete && "You can delete. "}
             This module is Admin-only for create, edit, delete.
           </p>
-          <div className="rounded-lg border border-dashed border-slate-200 bg-slate-50/50 p-8 text-center text-slate-500">
-            <p className="font-medium text-slate-700">Staff list and management form</p>
-            <p className="text-sm mt-1">Table and create/edit form will be implemented here.</p>
-          </div>
+          <RecentStaff
+            staff={[]}
+            allowCreate={!!allowCreate}
+            onAddStaff={() => setShowNewStaff(true)}
+            onEditStaff={(s: StaffRecord) => {
+              /* open edit flow - simplified to navigate to staff detail */
+              router.push(`/dashboard/staff/${s.id}`);
+            }}
+            onViewStaff={(s: StaffRecord) => router.push(`/dashboard/staff/${s.id}`)}
+          />
         </DashboardSection>
+        {showNewStaff && (
+          <NewStaffForm
+            onSave={(s) => {
+              // persist locally in sessionStorage for now; real API integration can be added later
+              const key = `new_staff_${s.id}`;
+              sessionStorage.setItem(key, JSON.stringify(s));
+              setShowNewStaff(false);
+            }}
+            onClose={() => setShowNewStaff(false)}
+          />
+        )}
       </div>
     </DashboardLayout>
   );

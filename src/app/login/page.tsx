@@ -44,7 +44,13 @@ export default function LoginPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: loginEmail, password: loginPassword }),
       });
-      const data = await res.json();
+      let data: { error?: string; user?: unknown };
+      try {
+        data = await res.json();
+      } catch {
+        setError("Server returned invalid response. Try again or use a role button.");
+        return;
+      }
       if (!res.ok) {
         setError(data.error || "Login failed");
         return;
@@ -57,6 +63,7 @@ export default function LoginPage() {
         name: user.name,
         token: user.token || "",
         expiresAt: Date.now() + 7 * 24 * 60 * 60 * 1000,
+        staffId: user.staffId ?? user.employeeId ?? null,
       });
       router.push("/dashboard");
       router.refresh();

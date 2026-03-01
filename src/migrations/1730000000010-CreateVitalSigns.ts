@@ -5,7 +5,7 @@ export class CreateVitalSigns1730000000010 implements MigrationInterface {
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`
-      CREATE TABLE "vital_signs" (
+      CREATE TABLE IF NOT EXISTS "vital_signs" (
         "id"                uuid            NOT NULL DEFAULT gen_random_uuid(),
         "encounter_id"      uuid            NOT NULL,
         "weight"            decimal(5,2),
@@ -31,11 +31,11 @@ export class CreateVitalSigns1730000000010 implements MigrationInterface {
       )
     `);
 
-    await queryRunner.query(`CREATE INDEX "IDX_vital_signs_encounter_id" ON "vital_signs" ("encounter_id")`);
+    await queryRunner.query(`CREATE INDEX IF NOT EXISTS "IDX_vital_signs_encounter_id" ON "vital_signs" ("encounter_id")`);
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.query(`DROP INDEX "IDX_vital_signs_encounter_id"`);
-    await queryRunner.query(`DROP TABLE "vital_signs"`);
+    await queryRunner.query(`DROP INDEX IF EXISTS "IDX_vital_signs_encounter_id"`);
+    await queryRunner.query(`DROP TABLE IF EXISTS "vital_signs"`);
   }
 }

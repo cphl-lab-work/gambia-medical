@@ -6,7 +6,7 @@ export class CreateUsers1730000000000 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`CREATE EXTENSION IF NOT EXISTS "uuid-ossp"`);
     await queryRunner.query(`
-      CREATE TABLE "users" (
+      CREATE TABLE IF NOT EXISTS "users" (
         "id" uuid NOT NULL DEFAULT uuid_generate_v4(),
         "email" character varying(255) NOT NULL,
         "passwordHash" character varying(255) NOT NULL,
@@ -21,6 +21,6 @@ export class CreateUsers1730000000000 implements MigrationInterface {
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.query(`DROP TABLE "users"`);
+    await queryRunner.query(`DROP TABLE IF EXISTS "users"`);
   }
 }

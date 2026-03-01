@@ -5,7 +5,7 @@ export class CreateDepartments1730000000008 implements MigrationInterface {
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`
-      CREATE TABLE "departments" (
+      CREATE TABLE IF NOT EXISTS "departments" (
         "id"                      uuid          NOT NULL DEFAULT gen_random_uuid(),
         "name"                    varchar(100)  NOT NULL,
         "code"                    varchar(20),
@@ -34,10 +34,11 @@ export class CreateDepartments1730000000008 implements MigrationInterface {
         ('Obstetrics & Gynaecology',  'OBGY'),
         ('Paediatrics',               'PAED'),
         ('Administration',            'ADMIN')
+      ON CONFLICT ("name") DO NOTHING
     `);
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.query(`DROP TABLE "departments"`);
+    await queryRunner.query(`DROP TABLE IF EXISTS "departments"`);
   }
 }

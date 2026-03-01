@@ -5,7 +5,7 @@ export class CreateLabResults1730000000012 implements MigrationInterface {
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`
-      CREATE TABLE "lab_results" (
+      CREATE TABLE IF NOT EXISTS "lab_results" (
         "id"              uuid          NOT NULL DEFAULT gen_random_uuid(),
         "lab_order_id"    uuid          NOT NULL,
         "parameter_name"  varchar(255)  NOT NULL,
@@ -26,11 +26,11 @@ export class CreateLabResults1730000000012 implements MigrationInterface {
       )
     `);
 
-    await queryRunner.query(`CREATE INDEX "IDX_lab_results_order_id" ON "lab_results" ("lab_order_id")`);
+    await queryRunner.query(`CREATE INDEX IF NOT EXISTS "IDX_lab_results_order_id" ON "lab_results" ("lab_order_id")`);
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.query(`DROP INDEX "IDX_lab_results_order_id"`);
-    await queryRunner.query(`DROP TABLE "lab_results"`);
+    await queryRunner.query(`DROP INDEX IF EXISTS "IDX_lab_results_order_id"`);
+    await queryRunner.query(`DROP TABLE IF EXISTS "lab_results"`);
   }
 }

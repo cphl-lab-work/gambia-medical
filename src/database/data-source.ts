@@ -17,12 +17,22 @@ import { Invoice } from "./entity/Invoice";
 import { InvoiceItem } from "./entity/InvoiceItem";
 import { PharmacyStock } from "./entity/PharmacyStock";
 import { Employee } from "./entity/Employee";
+import { StaffAttendance } from "./entity/StaffAttendance";
+import { StaffLeave } from "./entity/StaffLeave";
+import { StaffShiftSchedule } from "./entity/StaffShiftSchedule";
+import { StaffPerformanceNote } from "./entity/StaffPerformanceNote";
+import { StaffDocument } from "./entity/StaffDocument";
+import { Doctor } from "./entity/Doctor";
 import { Module } from "./entity/Module";
 import { RoleModulePermission } from "./entity/RoleModulePermission";
 import { RoleMenuItem } from "./entity/RoleMenuItem";
 import { Facility } from "./entity/Facility";
 import { Log } from "./entity/Log";
 import { TransactionLog } from "./entity/TransactionLog";
+
+// allow a single connection string (e.g. DATABASE_URL) to override individual settings
+// this is common in hosted Postgres environments
+const connectionUrl = process.env.DATABASE_URL || process.env.DB_URL || "";
 
 const dbHost = process.env.DB_HOST ?? "localhost";
 const dbPort = parseInt(process.env.DB_PORT ?? "5432", 10);
@@ -32,11 +42,10 @@ const dbPassword = process.env.DB_PASSWORD ?? "postgres";
 
 export const AppDataSource = new DataSource({
   type: "postgres",
-  host: dbHost,
-  port: dbPort,
-  username: dbUser,
-  password: dbPassword,
-  database: dbName,
+  // if a connection URL is provided, use that, otherwise fall back to individual parts
+  ...(connectionUrl
+    ? { url: connectionUrl }
+    : { host: dbHost, port: dbPort, username: dbUser, password: dbPassword, database: dbName }),
   synchronize: false,
   logging: process.env.NODE_ENV === "development",
   entities: [
@@ -56,6 +65,12 @@ export const AppDataSource = new DataSource({
     InvoiceItem,
     PharmacyStock,
     Employee,
+    StaffAttendance,
+    StaffLeave,
+    StaffShiftSchedule,
+    StaffPerformanceNote,
+    StaffDocument,
+    Doctor,
     Module,
     RoleModulePermission,
     RoleMenuItem,

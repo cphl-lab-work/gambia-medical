@@ -8,7 +8,7 @@ import {
   OneToOne,
   JoinColumn,
 } from "typeorm";
-import { Role } from "./Role";
+import type { Role } from "./Role";
 import { Employee } from "./Employee";
 
 export type UserStatus = "active" | "inactive" | "suspended" | "pending";
@@ -33,7 +33,7 @@ export class User {
   @Column({ type: "varchar", length: 255 })
   name!: string;
 
-  @ManyToOne(() => Role, (role) => role.users, { eager: true, onDelete: "RESTRICT" })
+  @ManyToOne("Role", "users", { eager: true, onDelete: "RESTRICT" })
   @JoinColumn({ name: "role_id" })
   role!: Role;
 

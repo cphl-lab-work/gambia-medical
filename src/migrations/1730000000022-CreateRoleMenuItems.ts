@@ -5,7 +5,7 @@ export class CreateRoleMenuItems1730000000022 implements MigrationInterface {
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`
-      CREATE TABLE "role_menu_items" (
+      CREATE TABLE IF NOT EXISTS "role_menu_items" (
         "id"            uuid      NOT NULL DEFAULT gen_random_uuid(),
         "role_id"       uuid      NOT NULL,
         "menu_item_id"  uuid      NOT NULL,
@@ -23,13 +23,13 @@ export class CreateRoleMenuItems1730000000022 implements MigrationInterface {
       )
     `);
 
-    await queryRunner.query(`CREATE INDEX "IDX_rmi_role_id"      ON "role_menu_items" ("role_id")`);
-    await queryRunner.query(`CREATE INDEX "IDX_rmi_menu_item_id" ON "role_menu_items" ("menu_item_id")`);
+    await queryRunner.query(`CREATE INDEX IF NOT EXISTS "IDX_rmi_role_id"      ON "role_menu_items" ("role_id")`);
+    await queryRunner.query(`CREATE INDEX IF NOT EXISTS "IDX_rmi_menu_item_id" ON "role_menu_items" ("menu_item_id")`);
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.query(`DROP INDEX "IDX_rmi_menu_item_id"`);
-    await queryRunner.query(`DROP INDEX "IDX_rmi_role_id"`);
-    await queryRunner.query(`DROP TABLE "role_menu_items"`);
+    await queryRunner.query(`DROP INDEX IF EXISTS "IDX_rmi_menu_item_id"`);
+    await queryRunner.query(`DROP INDEX IF EXISTS "IDX_rmi_role_id"`);
+    await queryRunner.query(`DROP TABLE IF EXISTS "role_menu_items"`);
   }
 }

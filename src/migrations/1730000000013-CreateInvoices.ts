@@ -5,7 +5,7 @@ export class CreateInvoices1730000000013 implements MigrationInterface {
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`
-      CREATE TABLE "invoices" (
+      CREATE TABLE IF NOT EXISTS "invoices" (
         "id"                  uuid            NOT NULL DEFAULT gen_random_uuid(),
         "invoice_number"      varchar(50)     NOT NULL,
         "patient_id"          uuid            NOT NULL,
@@ -34,11 +34,11 @@ export class CreateInvoices1730000000013 implements MigrationInterface {
       )
     `);
 
-    await queryRunner.query(`CREATE INDEX "IDX_invoices_patient_id" ON "invoices" ("patient_id")`);
-    await queryRunner.query(`CREATE INDEX "IDX_invoices_status"     ON "invoices" ("status")`);
+    await queryRunner.query(`CREATE INDEX IF NOT EXISTS "IDX_invoices_patient_id" ON "invoices" ("patient_id")`);
+    await queryRunner.query(`CREATE INDEX IF NOT EXISTS "IDX_invoices_status"     ON "invoices" ("status")`);
 
     await queryRunner.query(`
-      CREATE TABLE "invoice_items" (
+      CREATE TABLE IF NOT EXISTS "invoice_items" (
         "id"          uuid            NOT NULL DEFAULT gen_random_uuid(),
         "invoice_id"  uuid            NOT NULL,
         "description" varchar(255)    NOT NULL,
@@ -54,14 +54,14 @@ export class CreateInvoices1730000000013 implements MigrationInterface {
       )
     `);
 
-    await queryRunner.query(`CREATE INDEX "IDX_invoice_items_invoice_id" ON "invoice_items" ("invoice_id")`);
+    await queryRunner.query(`CREATE INDEX IF NOT EXISTS "IDX_invoice_items_invoice_id" ON "invoice_items" ("invoice_id")`);
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.query(`DROP INDEX "IDX_invoice_items_invoice_id"`);
-    await queryRunner.query(`DROP TABLE "invoice_items"`);
-    await queryRunner.query(`DROP INDEX "IDX_invoices_status"`);
-    await queryRunner.query(`DROP INDEX "IDX_invoices_patient_id"`);
-    await queryRunner.query(`DROP TABLE "invoices"`);
+    await queryRunner.query(`DROP INDEX IF EXISTS "IDX_invoice_items_invoice_id"`);
+    await queryRunner.query(`DROP TABLE IF EXISTS "invoice_items"`);
+    await queryRunner.query(`DROP INDEX IF EXISTS "IDX_invoices_status"`);
+    await queryRunner.query(`DROP INDEX IF EXISTS "IDX_invoices_patient_id"`);
+    await queryRunner.query(`DROP TABLE IF EXISTS "invoices"`);
   }
 }

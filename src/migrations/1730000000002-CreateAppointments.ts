@@ -4,8 +4,9 @@ export class CreateAppointments1730000000002 implements MigrationInterface {
   name = "CreateAppointments1730000000002";
 
   public async up(queryRunner: QueryRunner): Promise<void> {
+    await queryRunner.query(`CREATE EXTENSION IF NOT EXISTS "uuid-ossp"`);
     await queryRunner.query(`
-      CREATE TABLE "appointments" (
+      CREATE TABLE IF NOT EXISTS "appointments" (
         "id" uuid NOT NULL DEFAULT uuid_generate_v4(),
         "patient_name" character varying(255) NOT NULL,
         "patient_id" character varying(100),
@@ -26,6 +27,6 @@ export class CreateAppointments1730000000002 implements MigrationInterface {
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.query(`DROP TABLE "appointments"`);
+    await queryRunner.query(`DROP TABLE IF EXISTS "appointments"`);
   }
 }

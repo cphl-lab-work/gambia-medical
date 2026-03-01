@@ -5,7 +5,7 @@ export class CreateEmployees1730000000017 implements MigrationInterface {
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`
-      CREATE TABLE "employees" (
+      CREATE TABLE IF NOT EXISTS "employees" (
         "id"                       uuid          NOT NULL DEFAULT gen_random_uuid(),
         "employee_code"            varchar(20)   NOT NULL,
         "first_name"               varchar(100)  NOT NULL,
@@ -41,17 +41,17 @@ export class CreateEmployees1730000000017 implements MigrationInterface {
       )
     `);
 
-    await queryRunner.query(`CREATE INDEX "IDX_employees_department_id" ON "employees" ("department_id")`);
-    await queryRunner.query(`CREATE INDEX "IDX_employees_user_id"       ON "employees" ("user_id")`);
-    await queryRunner.query(`CREATE INDEX "IDX_employees_status"        ON "employees" ("status")`);
-    await queryRunner.query(`CREATE INDEX "IDX_employees_facility"      ON "employees" ("facility")`);
+    await queryRunner.query(`CREATE INDEX IF NOT EXISTS "IDX_employees_department_id" ON "employees" ("department_id")`);
+    await queryRunner.query(`CREATE INDEX IF NOT EXISTS "IDX_employees_user_id"       ON "employees" ("user_id")`);
+    await queryRunner.query(`CREATE INDEX IF NOT EXISTS "IDX_employees_status"        ON "employees" ("status")`);
+    await queryRunner.query(`CREATE INDEX IF NOT EXISTS "IDX_employees_facility"      ON "employees" ("facility")`);
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.query(`DROP INDEX "IDX_employees_facility"`);
-    await queryRunner.query(`DROP INDEX "IDX_employees_status"`);
-    await queryRunner.query(`DROP INDEX "IDX_employees_user_id"`);
-    await queryRunner.query(`DROP INDEX "IDX_employees_department_id"`);
-    await queryRunner.query(`DROP TABLE "employees"`);
+    await queryRunner.query(`DROP INDEX IF EXISTS "IDX_employees_facility"`);
+    await queryRunner.query(`DROP INDEX IF EXISTS "IDX_employees_status"`);
+    await queryRunner.query(`DROP INDEX IF EXISTS "IDX_employees_user_id"`);
+    await queryRunner.query(`DROP INDEX IF EXISTS "IDX_employees_department_id"`);
+    await queryRunner.query(`DROP TABLE IF EXISTS "employees"`);
   }
 }

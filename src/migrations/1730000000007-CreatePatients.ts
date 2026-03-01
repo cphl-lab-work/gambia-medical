@@ -5,7 +5,7 @@ export class CreatePatients1730000000007 implements MigrationInterface {
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`
-      CREATE TABLE "patients" (
+      CREATE TABLE IF NOT EXISTS "patients" (
         "id"                      uuid          NOT NULL DEFAULT gen_random_uuid(),
         "uhid"                    varchar(50)   NOT NULL,
         "name"                    varchar(255)  NOT NULL,
@@ -32,6 +32,6 @@ export class CreatePatients1730000000007 implements MigrationInterface {
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.query(`DROP TABLE "patients"`);
+    await queryRunner.query(`DROP TABLE IF EXISTS "patients"`);
   }
 }

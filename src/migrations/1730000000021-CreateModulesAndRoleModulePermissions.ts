@@ -4,9 +4,8 @@ export class CreateModulesAndRoleModulePermissions1730000000021 implements Migra
   name = "CreateModulesAndRoleModulePermissions1730000000021";
 
   public async up(queryRunner: QueryRunner): Promise<void> {
-    // ── modules table ──
     await queryRunner.query(`
-      CREATE TABLE "modules" (
+      CREATE TABLE IF NOT EXISTS "modules" (
         "id"            uuid          NOT NULL DEFAULT gen_random_uuid(),
         "code"          varchar(50)   NOT NULL,
         "display_name"  varchar(100)  NOT NULL,
@@ -21,7 +20,6 @@ export class CreateModulesAndRoleModulePermissions1730000000021 implements Migra
       )
     `);
 
-    // Seed modules
     await queryRunner.query(`
       INSERT INTO "modules" ("code", "display_name", "sort_order") VALUES
         ('patient_clerking',    'Patient Clerking',     1),
@@ -40,11 +38,11 @@ export class CreateModulesAndRoleModulePermissions1730000000021 implements Migra
         ('recipe_management',   'Recipe Management',    14),
         ('medicine_management', 'Medicine Management',  15),
         ('user_management',     'User Management',      16)
+      ON CONFLICT ("code") DO NOTHING
     `);
 
-    // ── role_module_permissions join table ──
     await queryRunner.query(`
-      CREATE TABLE "role_module_permissions" (
+      CREATE TABLE IF NOT EXISTS "role_module_permissions" (
         "id"          uuid      NOT NULL DEFAULT gen_random_uuid(),
         "role_id"     uuid      NOT NULL,
         "module_id"   uuid      NOT NULL,
@@ -64,62 +62,51 @@ export class CreateModulesAndRoleModulePermissions1730000000021 implements Migra
       )
     `);
 
-    await queryRunner.query(`CREATE INDEX "IDX_rmp_role_id"   ON "role_module_permissions" ("role_id")`);
-    await queryRunner.query(`CREATE INDEX "IDX_rmp_module_id" ON "role_module_permissions" ("module_id")`);
+    await queryRunner.query(`CREATE INDEX IF NOT EXISTS "IDX_rmp_role_id"   ON "role_module_permissions" ("role_id")`);
+    await queryRunner.query(`CREATE INDEX IF NOT EXISTS "IDX_rmp_module_id" ON "role_module_permissions" ("module_id")`);
 
-    // ── Seed role-module permissions ──
-    // Helper: INSERT using sub-selects so we reference roles/modules by name
     const perms: { module: string; role: string; c: boolean; r: boolean; u: boolean; d: boolean }[] = [
-      // patient_clerking
       { module: "patient_clerking", role: "receptionist",   c: true,  r: true,  u: true,  d: false },
       { module: "patient_clerking", role: "nurse",          c: true,  r: true,  u: true,  d: false },
       { module: "patient_clerking", role: "admin",          c: true,  r: true,  u: true,  d: true  },
       { module: "patient_clerking", role: "facility_admin", c: true,  r: true,  u: true,  d: true  },
       { module: "patient_clerking", role: "doctor",         c: false, r: true,  u: false, d: false },
-      // triage
       { module: "triage", role: "nurse",          c: true,  r: true,  u: true,  d: false },
       { module: "triage", role: "receptionist",   c: true,  r: true,  u: true,  d: false },
       { module: "triage", role: "admin",          c: true,  r: true,  u: true,  d: true  },
       { module: "triage", role: "facility_admin", c: true,  r: true,  u: true,  d: true  },
       { module: "triage", role: "doctor",         c: false, r: true,  u: false, d: false },
-      // medical_clerking
       { module: "medical_clerking", role: "doctor",         c: true,  r: true,  u: true,  d: false },
       { module: "medical_clerking", role: "admin",          c: true,  r: true,  u: true,  d: true  },
       { module: "medical_clerking", role: "nurse",          c: false, r: true,  u: false, d: false },
       { module: "medical_clerking", role: "receptionist",   c: false, r: true,  u: false, d: false },
       { module: "medical_clerking", role: "facility_admin", c: false, r: true,  u: false, d: false },
-      // appointments
       { module: "appointments", role: "receptionist",   c: true,  r: true,  u: true,  d: false },
       { module: "appointments", role: "nurse",          c: true,  r: true,  u: true,  d: false },
       { module: "appointments", role: "admin",          c: true,  r: true,  u: true,  d: true  },
       { module: "appointments", role: "facility_admin", c: true,  r: true,  u: true,  d: true  },
       { module: "appointments", role: "accountant",     c: false, r: true,  u: true,  d: false },
       { module: "appointments", role: "doctor",         c: false, r: true,  u: false, d: false },
-      // lab_orders
       { module: "lab_orders", role: "doctor",         c: true,  r: true,  u: false, d: false },
       { module: "lab_orders", role: "lab_tech",       c: true,  r: true,  u: true,  d: false },
       { module: "lab_orders", role: "admin",          c: true,  r: true,  u: true,  d: true  },
       { module: "lab_orders", role: "nurse",          c: false, r: true,  u: false, d: false },
       { module: "lab_orders", role: "receptionist",   c: false, r: true,  u: false, d: false },
       { module: "lab_orders", role: "facility_admin", c: false, r: true,  u: false, d: false },
-      // imaging
       { module: "imaging", role: "doctor",         c: true,  r: true,  u: false, d: false },
       { module: "imaging", role: "admin",          c: true,  r: true,  u: true,  d: true  },
       { module: "imaging", role: "lab_tech",       c: false, r: true,  u: true,  d: false },
       { module: "imaging", role: "nurse",          c: false, r: true,  u: false, d: false },
       { module: "imaging", role: "facility_admin", c: false, r: true,  u: false, d: false },
-      // pharmacy
       { module: "pharmacy", role: "doctor",         c: true,  r: true,  u: false, d: false },
       { module: "pharmacy", role: "pharmacist",     c: true,  r: true,  u: true,  d: false },
       { module: "pharmacy", role: "admin",          c: true,  r: true,  u: true,  d: true  },
       { module: "pharmacy", role: "nurse",          c: false, r: true,  u: false, d: false },
       { module: "pharmacy", role: "facility_admin", c: false, r: true,  u: false, d: false },
-      // billing
       { module: "billing", role: "accountant",     c: true,  r: true,  u: true,  d: false },
       { module: "billing", role: "admin",          c: true,  r: true,  u: true,  d: true  },
       { module: "billing", role: "facility_admin", c: true,  r: true,  u: true,  d: false },
       { module: "billing", role: "receptionist",   c: false, r: true,  u: false, d: false },
-      // reports
       { module: "reports", role: "admin",          c: true,  r: true,  u: true,  d: true  },
       { module: "reports", role: "accountant",     c: true,  r: true,  u: false, d: false },
       { module: "reports", role: "facility_admin", c: true,  r: true,  u: true,  d: false },
@@ -128,36 +115,29 @@ export class CreateModulesAndRoleModulePermissions1730000000021 implements Migra
       { module: "reports", role: "nurse",          c: false, r: true,  u: false, d: false },
       { module: "reports", role: "pharmacist",     c: false, r: true,  u: false, d: false },
       { module: "reports", role: "lab_tech",       c: false, r: true,  u: false, d: false },
-      // doctors
       { module: "doctors", role: "admin",          c: true,  r: true,  u: true,  d: true  },
       { module: "doctors", role: "facility_admin", c: true,  r: true,  u: true,  d: false },
       { module: "doctors", role: "doctor",         c: false, r: true,  u: false, d: false },
       { module: "doctors", role: "receptionist",   c: false, r: true,  u: false, d: false },
       { module: "doctors", role: "nurse",          c: false, r: true,  u: false, d: false },
-      // staff
       { module: "staff", role: "admin",          c: true,  r: true,  u: true,  d: true  },
       { module: "staff", role: "facility_admin", c: true,  r: true,  u: true,  d: false },
-      // patients
       { module: "patients", role: "receptionist",   c: true,  r: true,  u: true,  d: false },
       { module: "patients", role: "nurse",          c: true,  r: true,  u: true,  d: false },
       { module: "patients", role: "admin",          c: true,  r: true,  u: true,  d: true  },
       { module: "patients", role: "doctor",         c: true,  r: true,  u: true,  d: false },
       { module: "patients", role: "facility_admin", c: true,  r: true,  u: true,  d: true  },
-      // departments
       { module: "departments", role: "admin",          c: true,  r: true,  u: true,  d: true  },
       { module: "departments", role: "facility_admin", c: true,  r: true,  u: true,  d: false },
       { module: "departments", role: "doctor",         c: false, r: true,  u: false, d: false },
       { module: "departments", role: "receptionist",   c: false, r: true,  u: false, d: false },
       { module: "departments", role: "nurse",          c: false, r: true,  u: false, d: false },
-      // recipe_management
       { module: "recipe_management", role: "pharmacist",     c: true,  r: true,  u: true,  d: false },
       { module: "recipe_management", role: "admin",          c: true,  r: true,  u: true,  d: true  },
       { module: "recipe_management", role: "facility_admin", c: false, r: true,  u: false, d: false },
-      // medicine_management
       { module: "medicine_management", role: "pharmacist",     c: true,  r: true,  u: true,  d: false },
       { module: "medicine_management", role: "admin",          c: true,  r: true,  u: true,  d: true  },
       { module: "medicine_management", role: "facility_admin", c: false, r: true,  u: false, d: false },
-      // user_management
       { module: "user_management", role: "admin",          c: true,  r: true,  u: true,  d: true  },
       { module: "user_management", role: "facility_admin", c: true,  r: true,  u: true,  d: false },
     ];
@@ -168,14 +148,15 @@ export class CreateModulesAndRoleModulePermissions1730000000021 implements Migra
         SELECT r."id", m."id", $1, $2, $3, $4
         FROM "roles" r, "modules" m
         WHERE r."name" = $5 AND m."code" = $6
+        AND NOT EXISTS (SELECT 1 FROM "role_module_permissions" rmp WHERE rmp."role_id" = r."id" AND rmp."module_id" = m."id")
       `, [p.c, p.r, p.u, p.d, p.role, p.module]);
     }
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.query(`DROP INDEX "IDX_rmp_module_id"`);
-    await queryRunner.query(`DROP INDEX "IDX_rmp_role_id"`);
-    await queryRunner.query(`DROP TABLE "role_module_permissions"`);
-    await queryRunner.query(`DROP TABLE "modules"`);
+    await queryRunner.query(`DROP INDEX IF EXISTS "IDX_rmp_module_id"`);
+    await queryRunner.query(`DROP INDEX IF EXISTS "IDX_rmp_role_id"`);
+    await queryRunner.query(`DROP TABLE IF EXISTS "role_module_permissions"`);
+    await queryRunner.query(`DROP TABLE IF EXISTS "modules"`);
   }
 }

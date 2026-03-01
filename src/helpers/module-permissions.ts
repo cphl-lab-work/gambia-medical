@@ -38,9 +38,9 @@ export const MODULE_PERMISSIONS: Record<ModuleId, { create: Role[]; read: Role[]
     delete: ["admin", "facility_admin"],
   },
   medical_clerking: {
-    create: ["doctor", "admin"],
+    create: ["doctor", "admin", "receptionist"],
     read: ["doctor", "admin", "nurse", "receptionist", "facility_admin"],
-    update: ["doctor", "admin"],
+    update: ["doctor", "admin", "receptionist"],
     delete: ["admin"],
   },
   appointments: {

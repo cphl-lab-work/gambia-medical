@@ -6,7 +6,7 @@ import {
   UpdateDateColumn,
   OneToMany,
 } from "typeorm";
-import { User } from "./User";
+import type { User } from "./User";
 
 export type RoleStatus = "active" | "inactive";
 
@@ -45,6 +45,6 @@ export class Role {
   @UpdateDateColumn({ name: "updated_at" })
   updatedAt!: Date;
 
-  @OneToMany(() => User, (user) => user.role)
+  @OneToMany("User", "role")
   users!: User[];
 }

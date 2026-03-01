@@ -113,6 +113,11 @@ const icons = {
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
     </svg>
   ),
+  facilities: (
+    <svg className={iconClass} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+    </svg>
+  ),
 };
 
 type NavLinkItem = { href: string; label: string; icon: React.ReactNode; roles?: string[] };
@@ -127,12 +132,13 @@ const NAV: NavItem[] = [
   { href: "/dashboard", label: "Dashboard", icon: icons.dashboard },
   { href: "/dashboard/clerking", label: "Patient clerking", icon: icons.clerking, roles: ["receptionist", "nurse", "facility_admin"] },
   { href: "/dashboard/triage", label: "Triage & Registration", icon: icons.triage, roles: ["receptionist", "nurse", "facility_admin"] },
-  { href: "/dashboard/medical-clerking", label: "Medical clerking", icon: icons.medicalClerking, roles: ["admin", "doctor", "facility_admin"] },
+  { href: "/dashboard/medical-clerking", label: "Medical clerking", icon: icons.medicalClerking, roles: ["admin", "doctor", "receptionist", "facility_admin"] },
   { href: "/dashboard/doctors", label: "Doctors", icon: icons.doctors, roles: ["admin", "doctor", "receptionist", "facility_admin"] },
   { href: "/dashboard/staff", label: "Staff", icon: icons.staff, roles: ["admin", "facility_admin"] },
   { href: "/dashboard/patients", label: "Patients", icon: icons.patients, roles: ["admin", "doctor", "receptionist", "nurse", "facility_admin"] },
   { href: "/dashboard/appointments", label: "Appointments", icon: icons.appointments, roles: ["admin", "doctor", "receptionist", "nurse", "accountant", "facility_admin"] },
   { href: "/dashboard/departments", label: "Departments", icon: icons.departments, roles: ["admin", "doctor", "facility_admin"] },
+  { href: "/dashboard/facilities", label: "Facilities", icon: icons.facilities, roles: ["admin"] },
   { href: "/dashboard/lab-orders", label: "Laboratory", icon: icons.laboratory, roles: ["admin", "doctor", "lab_tech"] },
   { href: "/dashboard/imaging", label: "Imaging (RIS)", icon: icons.imaging, roles: ["admin", "doctor", "lab_tech"] },
   {
@@ -322,6 +328,7 @@ export default function DashboardLayout({
         name: user.name,
         token: user.token || "",
         expiresAt: Date.now() + 7 * 24 * 60 * 60 * 1000,
+        staffId: user.staffId ?? user.employeeId ?? null,
       });
       setAuth({ name: user.name, role: user.role, email: user.email });
       setOpenDropdown(null);
@@ -377,12 +384,14 @@ export default function DashboardLayout({
           </button>
         </div>
         <nav className="flex-1 min-h-0 overflow-y-auto py-2">
-          {NAV.filter((item) => canSeeNavItem(item, auth.role)).map((item) =>
-            isNavGroup(item) ? (() => {
+          {NAV.filter((item) => canSeeNavItem(item, auth.role)).map((item) => {
+            const hiddenItems = ["Patient clerking", "Triage & Registration", "Doctors", "Appointments", "Laboratory", "Imaging (RIS)", "Pharmacy", "Billing", "Reports", "Human Resources"];
+            const isHidden = hiddenItems.includes((item as any).label || (item as NavLinkItem).label);
+            return isNavGroup(item) ? (() => {
               const group = item as NavGroupItem;
               const isGroupOpen = expandedGroups.has(group.label);
               return (
-                <div key={group.label}>
+                <div key={group.label} className={isHidden ? "hidden" : ""}>
                   <button
                     type="button"
                     onClick={() => toggleGroup(group.label)}
@@ -422,19 +431,19 @@ export default function DashboardLayout({
               );
             })() : (
               <Link
-                key={item.href}
-                href={item.href}
+                key={(item as NavLinkItem).href}
+                href={(item as NavLinkItem).href}
                 className={`flex items-center gap-3 px-4 py-2.5 text-sm ${
-                  pathname === item.href ? "bg-white/20" : "hover:bg-white/10"
-                }`}
+                  pathname === (item as NavLinkItem).href ? "bg-white/20" : "hover:bg-white/10"
+                } ${isHidden ? "hidden" : ""}`}
               >
-                <span className="flex items-center justify-center text-white">{item.icon}</span>
+                <span className="flex items-center justify-center text-white">{(item as NavLinkItem).icon}</span>
                 {!sidebarCollapsed && (
-                  <span className="flex-1 min-w-0">{item.label}</span>
+                  <span className="flex-1 min-w-0">{(item as NavLinkItem).label}</span>
                 )}
               </Link>
-            )
-          )}
+            );
+          })}
         </nav>
         <div className="mt-auto shrink-0 border-t border-white/20 py-2 bg-[var(--sidebar-bg)]">
           {SYSTEM.filter((item) => canSeeNavItem(item, auth.role)).length > 0 && (

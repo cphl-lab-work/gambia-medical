@@ -6,7 +6,7 @@ export class CreateRoles1730000000004 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`CREATE EXTENSION IF NOT EXISTS "uuid-ossp"`);
     await queryRunner.query(`
-      CREATE TABLE "roles" (
+      CREATE TABLE IF NOT EXISTS "roles" (
         "id" uuid NOT NULL DEFAULT uuid_generate_v4(),
         "name" character varying(50) NOT NULL,
         "display_name" character varying(255),
@@ -28,10 +28,11 @@ export class CreateRoles1730000000004 implements MigrationInterface {
         ('accountant',     'Accountant'),
         ('pharmacist',     'Pharmacist'),
         ('lab_tech',       'Lab Tech')
+      ON CONFLICT ("name") DO NOTHING
     `);
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.query(`DROP TABLE "roles"`);
+    await queryRunner.query(`DROP TABLE IF EXISTS "roles"`);
   }
 }

@@ -5,7 +5,7 @@ export class CreateEncounters1730000000009 implements MigrationInterface {
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`
-      CREATE TABLE "encounters" (
+      CREATE TABLE IF NOT EXISTS "encounters" (
         "id"                    uuid          NOT NULL DEFAULT gen_random_uuid(),
         "encounter_number"      varchar(50)   NOT NULL,
         "patient_id"            uuid          NOT NULL,
@@ -35,13 +35,13 @@ export class CreateEncounters1730000000009 implements MigrationInterface {
       )
     `);
 
-    await queryRunner.query(`CREATE INDEX "IDX_encounters_patient_id" ON "encounters" ("patient_id")`);
-    await queryRunner.query(`CREATE INDEX "IDX_encounters_status"     ON "encounters" ("status")`);
+    await queryRunner.query(`CREATE INDEX IF NOT EXISTS "IDX_encounters_patient_id" ON "encounters" ("patient_id")`);
+    await queryRunner.query(`CREATE INDEX IF NOT EXISTS "IDX_encounters_status"     ON "encounters" ("status")`);
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.query(`DROP INDEX "IDX_encounters_status"`);
-    await queryRunner.query(`DROP INDEX "IDX_encounters_patient_id"`);
-    await queryRunner.query(`DROP TABLE "encounters"`);
+    await queryRunner.query(`DROP INDEX IF EXISTS "IDX_encounters_status"`);
+    await queryRunner.query(`DROP INDEX IF EXISTS "IDX_encounters_patient_id"`);
+    await queryRunner.query(`DROP TABLE IF EXISTS "encounters"`);
   }
 }

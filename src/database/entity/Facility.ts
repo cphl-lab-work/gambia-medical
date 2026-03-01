@@ -4,6 +4,8 @@ import {
   Column,
   CreateDateColumn,
   UpdateDateColumn,
+  ManyToOne,
+  JoinColumn,
 } from "typeorm";
 
 export type FacilityType = "hospital" | "clinic" | "health_center" | "pharmacy" | "lab" | "other";
@@ -39,6 +41,9 @@ export class Facility {
 
   @Column({ type: "text", nullable: true })
   description!: string | null;
+
+  @Column({ type: "uuid", name: "facility_admin_id", nullable: true, comment: "UUID of the facility admin user" })
+  facilityAdminId!: string | null;
 
   @Column({ type: "boolean", name: "is_active", default: true })
   isActive!: boolean;

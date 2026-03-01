@@ -5,7 +5,7 @@ export class CreateLogs1730000000024 implements MigrationInterface {
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`
-      CREATE TABLE "logs" (
+      CREATE TABLE IF NOT EXISTS "logs" (
         "id"              uuid          NOT NULL DEFAULT gen_random_uuid(),
         "user_id"         uuid,
         "client_id"       varchar(255),
@@ -31,17 +31,17 @@ export class CreateLogs1730000000024 implements MigrationInterface {
       )
     `);
 
-    await queryRunner.query(`CREATE INDEX "IDX_logs_user_id"       ON "logs" ("user_id")`);
-    await queryRunner.query(`CREATE INDEX "IDX_logs_operation_type" ON "logs" ("operation_type")`);
-    await queryRunner.query(`CREATE INDEX "IDX_logs_table_name"     ON "logs" ("table_name")`);
-    await queryRunner.query(`CREATE INDEX "IDX_logs_created_at"     ON "logs" ("created_at")`);
+    await queryRunner.query(`CREATE INDEX IF NOT EXISTS "IDX_logs_user_id"       ON "logs" ("user_id")`);
+    await queryRunner.query(`CREATE INDEX IF NOT EXISTS "IDX_logs_operation_type" ON "logs" ("operation_type")`);
+    await queryRunner.query(`CREATE INDEX IF NOT EXISTS "IDX_logs_table_name"     ON "logs" ("table_name")`);
+    await queryRunner.query(`CREATE INDEX IF NOT EXISTS "IDX_logs_created_at"     ON "logs" ("created_at")`);
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.query(`DROP INDEX "IDX_logs_created_at"`);
-    await queryRunner.query(`DROP INDEX "IDX_logs_table_name"`);
-    await queryRunner.query(`DROP INDEX "IDX_logs_operation_type"`);
-    await queryRunner.query(`DROP INDEX "IDX_logs_user_id"`);
-    await queryRunner.query(`DROP TABLE "logs"`);
+    await queryRunner.query(`DROP INDEX IF EXISTS "IDX_logs_created_at"`);
+    await queryRunner.query(`DROP INDEX IF EXISTS "IDX_logs_table_name"`);
+    await queryRunner.query(`DROP INDEX IF EXISTS "IDX_logs_operation_type"`);
+    await queryRunner.query(`DROP INDEX IF EXISTS "IDX_logs_user_id"`);
+    await queryRunner.query(`DROP TABLE IF EXISTS "logs"`);
   }
 }

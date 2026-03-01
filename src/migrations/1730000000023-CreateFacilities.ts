@@ -5,7 +5,7 @@ export class CreateFacilities1730000000023 implements MigrationInterface {
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`
-      CREATE TABLE "facilities" (
+      CREATE TABLE IF NOT EXISTS "facilities" (
         "id"            uuid          NOT NULL DEFAULT gen_random_uuid(),
         "code"          varchar(20)   NOT NULL,
         "name"          varchar(255)  NOT NULL,
@@ -25,13 +25,13 @@ export class CreateFacilities1730000000023 implements MigrationInterface {
       )
     `);
 
-    await queryRunner.query(`CREATE INDEX "IDX_facilities_code"     ON "facilities" ("code")`);
-    await queryRunner.query(`CREATE INDEX "IDX_facilities_is_active" ON "facilities" ("is_active")`);
+    await queryRunner.query(`CREATE INDEX IF NOT EXISTS "IDX_facilities_code"     ON "facilities" ("code")`);
+    await queryRunner.query(`CREATE INDEX IF NOT EXISTS "IDX_facilities_is_active" ON "facilities" ("is_active")`);
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.query(`DROP INDEX "IDX_facilities_is_active"`);
-    await queryRunner.query(`DROP INDEX "IDX_facilities_code"`);
-    await queryRunner.query(`DROP TABLE "facilities"`);
+    await queryRunner.query(`DROP INDEX IF EXISTS "IDX_facilities_is_active"`);
+    await queryRunner.query(`DROP INDEX IF EXISTS "IDX_facilities_code"`);
+    await queryRunner.query(`DROP TABLE IF EXISTS "facilities"`);
   }
 }

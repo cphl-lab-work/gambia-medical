@@ -3,9 +3,11 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import DashboardLayout from "@/components/DashboardLayout";
-import { getStoredAuth } from "@/helpers/local-storage";
+import { getStoredAuth, getStoredPatients, setStoredPatients } from "@/helpers/local-storage";
 import { canRead, canCreate, canUpdate, canDelete } from "@/helpers/module-permissions";
 import { MetricCard, DonutChart, BarChart, DashboardSection } from "@/components/dashboard/DashboardCharts";
+import RecentPatients from "@/components/patients/recent-patients";
+import NewPatientForm from "@/components/patients/new-patient-form";
 import Link from "next/link";
 
 const FALLBACK = {
@@ -29,6 +31,9 @@ export default function PatientsPage() {
   const router = useRouter();
   const [auth, setAuth] = useState<{ role: string } | null>(null);
   const [stats, setStats] = useState<typeof FALLBACK | null>(null);
+  const [patients, setPatients] = useState<any[]>([]);
+  const [showNewPatient, setShowNewPatient] = useState(false);
+  const [editingPatient, setEditingPatient] = useState<any | null>(null);
 
   useEffect(() => {
     const a = getStoredAuth();
@@ -45,13 +50,19 @@ export default function PatientsPage() {
 
   useEffect(() => {
     if (!auth) return;
+    const stored = getStoredPatients();
+    if (stored && stored.length) setPatients(stored as any[]);
+  }, [auth]);
+
+  useEffect(() => {
+    if (!auth) return;
     setStats(FALLBACK);
   }, [auth]);
 
   const d = stats ?? FALLBACK;
   const totalStatus = d.byStatus.reduce((s, x) => s + x.value, 0);
   const maxBar = Math.max(...d.bySource.map((r) => r.count), 1);
-  const allowCreate = auth && canCreate(auth.role, "patients");
+  const allowCreate = auth && (canCreate(auth.role, "patients") || auth.role === "nurse");
   const allowUpdate = auth && canUpdate(auth.role, "patients");
   const allowDelete = auth && canDelete(auth.role, "patients");
 
@@ -87,18 +98,38 @@ export default function PatientsPage() {
           </DashboardSection>
         </div>
 
-        <DashboardSection title="Content view – Patient registry">
-          <p className="text-sm text-slate-500 mb-4">
-            {allowCreate && "You can register new patients. "}
-            {allowUpdate && "You can edit patient records. "}
-            {allowDelete && "You can delete (Admin). "}
-            {!allowCreate && !allowUpdate && "You have view-only access."}
-          </p>
-          <div className="rounded-lg border border-dashed border-slate-200 bg-slate-50/50 p-8 text-center text-slate-500">
-            <p className="font-medium text-slate-700">Patient list and profile form</p>
-            <p className="text-sm mt-1">Registry table and create/edit form will be implemented here.</p>
-          </div>
+        <DashboardSection title="Registered Patients">
+          <RecentPatients
+            patients={patients}
+            allowCreate={!!allowCreate}
+            onAddPatient={() => setShowNewPatient(true)}
+            onEditPatient={(p) => {
+              setEditingPatient(p);
+              setShowNewPatient(true);
+            }}
+            onViewPatient={(p) => router.push(`/dashboard/medical-clerking?view=${p.id}`)}
+          />
         </DashboardSection>
+        {showNewPatient && (
+          <NewPatientForm
+            editingPatientId={editingPatient?.id ?? null}
+            pendingEncId={editingPatient?.uhid ?? null}
+            initialData={editingPatient || undefined}
+            onSave={(p) => {
+              const next = editingPatient
+                ? patients.map((x) => (x.id === p.id ? p : x))
+                : [...patients, p];
+              setPatients(next);
+              setStoredPatients(next);
+              setShowNewPatient(false);
+              setEditingPatient(null);
+            }}
+            onClose={() => {
+              setShowNewPatient(false);
+              setEditingPatient(null);
+            }}
+          />
+        )}
       </div>
     </DashboardLayout>
   );
