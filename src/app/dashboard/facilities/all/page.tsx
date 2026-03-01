@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Select from "react-select";
@@ -52,7 +52,7 @@ const selectSmall = {
   indicatorSeparator: () => ({ display: "none" as const }),
 };
 
-export default function AllFacilitiesPage() {
+function AllFacilitiesContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -460,5 +460,13 @@ export default function AllFacilitiesPage() {
         onSave={handleSave}
       />
     </DashboardLayout>
+  );
+}
+
+export default function AllFacilitiesPage() {
+  return (
+    <Suspense fallback={null}>
+      <AllFacilitiesContent />
+    </Suspense>
   );
 }

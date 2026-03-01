@@ -7,7 +7,7 @@ import {
   ManyToOne,
   JoinColumn,
 } from "typeorm";
-import { Employee } from "./Employee";
+import type { Employee } from "./Employee";
 
 @Entity("staff_shift_schedule")
 export class StaffShiftSchedule {
@@ -17,7 +17,7 @@ export class StaffShiftSchedule {
   @Column({ type: "uuid", name: "employee_id" })
   employeeId!: string;
 
-  @ManyToOne(() => Employee, (e) => e.shiftSchedules, { onDelete: "CASCADE" })
+  @ManyToOne("Employee", "shiftSchedules", { onDelete: "CASCADE" })
   @JoinColumn({ name: "employee_id" })
   employee!: Employee;
 

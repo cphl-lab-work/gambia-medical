@@ -9,7 +9,7 @@ import {
   JoinColumn,
 } from "typeorm";
 import type { Role } from "./Role";
-import { Employee } from "./Employee";
+import type { Employee } from "./Employee";
 
 export type UserStatus = "active" | "inactive" | "suspended" | "pending";
 
@@ -37,7 +37,7 @@ export class User {
   @JoinColumn({ name: "role_id" })
   role!: Role;
 
-  @OneToOne(() => Employee, { nullable: true, onDelete: "SET NULL" })
+  @OneToOne("Employee", { nullable: true, onDelete: "SET NULL" })
   @JoinColumn({ name: "employee_id" })
   employee!: Employee | null;
 

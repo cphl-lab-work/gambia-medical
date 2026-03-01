@@ -9,19 +9,17 @@ import {
   OneToMany,
   JoinColumn,
 } from "typeorm";
-import { Department } from "./Department";
-import { User } from "./User";
-import { Doctor } from "./Doctor";
-import { StaffAttendance } from "./StaffAttendance";
-import { StaffLeave } from "./StaffLeave";
-import { StaffShiftSchedule } from "./StaffShiftSchedule";
-import { StaffPerformanceNote } from "./StaffPerformanceNote";
-import { StaffDocument } from "./StaffDocument";
+import type { Department } from "./Department";
+import type { User } from "./User";
+import type { Doctor } from "./Doctor";
+import type { StaffAttendance } from "./StaffAttendance";
+import type { StaffLeave } from "./StaffLeave";
+import type { StaffShiftSchedule } from "./StaffShiftSchedule";
+import type { StaffPerformanceNote } from "./StaffPerformanceNote";
+import type { StaffDocument } from "./StaffDocument";
 
 export type EmployeeStatus = "active" | "inactive" | "on_leave" | "terminated" | "suspended";
 export type EmploymentType = "full_time" | "part_time" | "contract" | "intern";
-
-/** Staff role: Doctor, Nurse, Receptionist, Pharmacist, Lab Technician */
 export type StaffRole = "doctor" | "nurse" | "receptionist" | "pharmacist" | "lab_technician";
 
 @Entity("employees")
@@ -32,7 +30,7 @@ export class Employee {
   @Column({ type: "varchar", length: 20, unique: true, name: "employee_code" })
   employeeCode!: string;
 
-  // ——— Basic staff information ———
+  // ——— Basic information ———
   @Column({ type: "varchar", length: 100, name: "first_name" })
   firstName!: string;
 
@@ -71,7 +69,7 @@ export class Employee {
   @Column({ type: "varchar", length: 50, name: "staff_role", nullable: true })
   staffRole!: StaffRole | string | null;
 
-  @ManyToOne(() => Department, { nullable: true, onDelete: "SET NULL" })
+  @ManyToOne("Department", { nullable: true, onDelete: "SET NULL" })
   @JoinColumn({ name: "department_id" })
   department!: Department | null;
 
@@ -148,28 +146,25 @@ export class Employee {
   @UpdateDateColumn({ name: "updated_at" })
   updatedAt!: Date;
 
-  // ——— Login access: user account linked to this staff (users.employee_id → employees.id) ———
-  @OneToOne(() => User, (user) => user.employee, { nullable: true, onDelete: "SET NULL" })
-  @JoinColumn({ name: "user_id" })
+  // ——— Relations (all string-based to avoid circular imports) ———
+  @OneToOne("User", "employee")
   user!: User | null;
 
-  // ——— Doctor record when this staff is a doctor (doctors.staff_id → employees.id) ———
-  @OneToOne(() => Doctor, (doctor) => doctor.staff)
+  @OneToOne("Doctor", "staff")
   doctorRecord!: Doctor | null;
 
-  // ——— Relations (work tracking & documents) ———
-  @OneToMany(() => StaffAttendance, (rec) => rec.employee)
+  @OneToMany("StaffAttendance", "employee")
   attendanceRecords!: StaffAttendance[];
 
-  @OneToMany(() => StaffLeave, (rec) => rec.employee)
+  @OneToMany("StaffLeave", "employee")
   leaveRecords!: StaffLeave[];
 
-  @OneToMany(() => StaffShiftSchedule, (rec) => rec.employee)
+  @OneToMany("StaffShiftSchedule", "employee")
   shiftSchedules!: StaffShiftSchedule[];
 
-  @OneToMany(() => StaffPerformanceNote, (rec) => rec.employee)
+  @OneToMany("StaffPerformanceNote", "employee")
   performanceNotes!: StaffPerformanceNote[];
 
-  @OneToMany(() => StaffDocument, (rec) => rec.employee)
+  @OneToMany("StaffDocument", "employee")
   documents!: StaffDocument[];
 }

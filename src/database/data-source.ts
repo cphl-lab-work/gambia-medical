@@ -30,22 +30,42 @@ import { Facility } from "./entity/Facility";
 import { Log } from "./entity/Log";
 import { TransactionLog } from "./entity/TransactionLog";
 
-// allow a single connection string (e.g. DATABASE_URL) to override individual settings
-// this is common in hosted Postgres environments
-const connectionUrl = process.env.DATABASE_URL || process.env.DB_URL || "";
+/**
+ * Parse DATABASE_URL and extract ?schema= as a separate option.
+ * TypeORM does not read ?schema= from the URL string — it needs to be set via `schema:`.
+ */
+function parseConnectionUrl(rawUrl: string): { url: string; schema: string | undefined } {
+  try {
+    const parsed = new URL(rawUrl);
+    const schema = parsed.searchParams.get("schema") ?? undefined;
+    parsed.search = ""; // strip all query params so TypeORM gets a clean URL
+    return { url: parsed.toString(), schema };
+  } catch {
+    return { url: rawUrl, schema: undefined };
+  }
+}
 
+const rawUrl = process.env.DATABASE_URL || process.env.DB_URL || "";
+const { url: connectionUrl, schema: urlSchema } = rawUrl
+  ? parseConnectionUrl(rawUrl)
+  : { url: "", schema: undefined };
+
+// Individual connection params (fallback when DATABASE_URL is not set)
 const dbHost = process.env.DB_HOST ?? "localhost";
 const dbPort = parseInt(process.env.DB_PORT ?? "5432", 10);
 const dbName = process.env.DB_NAME ?? "hm2";
 const dbUser = process.env.DB_USER ?? "postgres";
 const dbPassword = process.env.DB_PASSWORD ?? "postgres";
 
+// Schema: from DATABASE_URL ?schema=, DB_SCHEMA env var, or default "public"
+const dbSchema = urlSchema ?? process.env.DB_SCHEMA ?? "public";
+
 export const AppDataSource = new DataSource({
   type: "postgres",
-  // if a connection URL is provided, use that, otherwise fall back to individual parts
   ...(connectionUrl
     ? { url: connectionUrl }
     : { host: dbHost, port: dbPort, username: dbUser, password: dbPassword, database: dbName }),
+  schema: dbSchema,
   synchronize: false,
   logging: process.env.NODE_ENV === "development",
   entities: [

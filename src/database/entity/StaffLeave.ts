@@ -7,8 +7,8 @@ import {
   ManyToOne,
   JoinColumn,
 } from "typeorm";
-import { Employee } from "./Employee";
-import { User } from "./User";
+import type { Employee } from "./Employee";
+import type { User } from "./User";
 
 @Entity("staff_leave")
 export class StaffLeave {
@@ -18,7 +18,7 @@ export class StaffLeave {
   @Column({ type: "uuid", name: "employee_id" })
   employeeId!: string;
 
-  @ManyToOne(() => Employee, (e) => e.leaveRecords, { onDelete: "CASCADE" })
+  @ManyToOne("Employee", "leaveRecords", { onDelete: "CASCADE" })
   @JoinColumn({ name: "employee_id" })
   employee!: Employee;
 
@@ -40,7 +40,7 @@ export class StaffLeave {
   @Column({ type: "uuid", name: "approved_by_id", nullable: true })
   approvedById!: string | null;
 
-  @ManyToOne(() => User, { onDelete: "SET NULL" })
+  @ManyToOne("User", { onDelete: "SET NULL" })
   @JoinColumn({ name: "approved_by_id" })
   approvedBy!: User | null;
 
