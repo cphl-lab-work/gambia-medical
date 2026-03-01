@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import SlidePanel from "@/components/ui/SlidePanel";
 
 interface Facility {
   id: string;
@@ -177,24 +178,12 @@ export default function FacilityModal({
     }
   };
 
-  if (!isOpen) return null;
-
   return (
-    <>
-      {/* Overlay */}
-      <div
-        className="fixed inset-0 bg-black/40 z-40 mt-0"
-        style={{ marginTop: 0 }}
-        onClick={onClose}
-        aria-hidden
-      />
-
-      {/* Modal */}
-      <div
-        className="fixed top-0 right-0 bottom-0 w-full max-w-xl bg-white shadow-2xl z-50 flex flex-col mt-0"
-        style={{ marginTop: 0 }}
-        onClick={(e) => e.stopPropagation()}
-      >
+    <SlidePanel
+      open={isOpen}
+      onClose={onClose}
+      title={facility ? "Edit Facility" : "Create Facility"}
+    >
         {/* Header */}
         <div className="shrink-0 flex items-center justify-between border-b border-slate-200 px-6 py-4">
           <div>
@@ -238,7 +227,7 @@ export default function FacilityModal({
             <div className="space-y-4">
               {/* Facility Code */}
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">
+                <label className="block text-sm font-bold text-slate-700 mb-1 capitalize">
                   Facility Code
                 </label>
                 <div className="flex gap-2">
@@ -386,7 +375,6 @@ export default function FacilityModal({
             </button>
           </div>
         </form>
-      </div>
-    </>
+    </SlidePanel>
   );
 }

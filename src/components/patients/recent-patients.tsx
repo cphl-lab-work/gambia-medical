@@ -5,6 +5,7 @@ import Select from "react-select";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import ViewPatientPanel from "./view-patient-panel";
+import OPDModal, { type OPDPatient } from "./OPDModal";
 
 export interface PatientRecord {
   id: string;
@@ -81,6 +82,7 @@ export default function RecentPatients({
   const [filterOpen, setFilterOpen] = useState(false);
   const [actionRowId, setActionRowId] = useState<string | null>(null);
   const [viewPatient, setViewPatient] = useState<PatientRecord | null>(null);
+  const [opdPatient, setOpdPatient] = useState<OPDPatient | null>(null);
   const filterRef = useRef<HTMLDivElement | null>(null);
   const actionRef = useRef<HTMLDivElement | null>(null);
 
@@ -307,7 +309,7 @@ export default function RecentPatients({
                         </svg>
                       </button>
                       {actionRowId === p.id && (
-                        <div className="absolute right-0 mt-1 w-40 origin-top-right rounded-lg border border-slate-200 bg-white shadow-lg z-30 py-1">
+                        <div className="absolute right-0 mt-1 w-44 origin-top-right rounded-lg border border-slate-200 bg-white shadow-lg z-30 py-1">
                           <button
                             type="button"
                             onClick={() => {
@@ -331,9 +333,8 @@ export default function RecentPatients({
                           <button
                             type="button"
                             onClick={() => {
-                              sessionStorage.setItem(`opd_patient_${p.id}`, JSON.stringify(p));
                               setActionRowId(null);
-                              router.push(`/dashboard/medical-clerking/opd?patientId=${p.id}`);
+                              setOpdPatient(p as OPDPatient);
                             }}
                             className="block w-full px-3 py-2 text-left text-sm text-slate-700 hover:bg-slate-50"
                           >
@@ -349,6 +350,18 @@ export default function RecentPatients({
                             className="block w-full px-3 py-2 text-left text-sm text-slate-700 hover:bg-slate-50"
                           >
                             Patient Chart
+                          </button>
+                          <div className="border-t border-slate-100 my-1" />
+                          <button
+                            type="button"
+                            onClick={() => {
+                              sessionStorage.setItem(`ipd_patient_${p.id}`, JSON.stringify(p));
+                              setActionRowId(null);
+                              router.push(`/dashboard/ipd/admit?patientId=${p.id}`);
+                            }}
+                            className="block w-full px-3 py-2 text-left text-sm font-medium text-emerald-700 hover:bg-emerald-50"
+                          >
+                            Admit IPD
                           </button>
                         </div>
                       )}
@@ -371,6 +384,11 @@ export default function RecentPatients({
           }}
         />
       )}
+
+      <OPDModal
+        patient={opdPatient}
+        onClose={() => setOpdPatient(null)}
+      />
     </div>
   );
 }

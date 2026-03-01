@@ -350,7 +350,10 @@ export default function DashboardLayout({
   }
 
   return (
-    <div className="flex min-h-screen">
+    <div
+      className="flex min-h-screen"
+      style={{ ["--sidebar-w" as string]: sidebarCollapsed ? "64px" : "224px" }}
+    >
       {/* Sidebar - fixed on scroll */}
       <aside
         className={`fixed left-0 top-0 bottom-0 z-30 bg-[var(--sidebar-bg)] text-white flex flex-col h-screen transition-[width] ${
@@ -675,11 +678,12 @@ export default function DashboardLayout({
       {openDropdown === "mail" && (
         <>
           <div
-            className="fixed inset-0 bg-black/30 z-40"
+            className="fixed inset-0 bg-black/30 z-40 mt-0"
+            style={{ marginTop: 0 }}
             onClick={() => setOpenDropdown(null)}
             aria-hidden
           />
-          <div className="fixed top-0 right-0 bottom-0 w-full max-w-md bg-white shadow-2xl z-50 flex flex-col transform transition-transform" onClick={(e) => e.stopPropagation()}>
+          <div className="fixed top-0 right-0 bottom-0 w-full max-w-md bg-white shadow-2xl z-50 flex flex-col mt-0 transform transition-transform" style={{ marginTop: 0 }} onClick={(e) => e.stopPropagation()}>
             <div className="shrink-0 flex items-center justify-between border-b border-slate-200 px-4 py-3">
               <div>
                 <h2 className="text-lg font-semibold text-slate-800">Messages</h2>
@@ -721,11 +725,12 @@ export default function DashboardLayout({
       {openDropdown === "notifications" && (
         <>
           <div
-            className="fixed inset-0 bg-black/30 z-40"
+            className="fixed inset-0 bg-black/30 z-40 mt-0"
+            style={{ marginTop: 0 }}
             onClick={() => setOpenDropdown(null)}
             aria-hidden
           />
-          <div className="fixed top-0 right-0 bottom-0 w-full max-w-md bg-white shadow-2xl z-50 flex flex-col" onClick={(e) => e.stopPropagation()}>
+          <div className="fixed top-0 right-0 bottom-0 w-full max-w-md bg-white shadow-2xl z-50 flex flex-col mt-0" style={{ marginTop: 0 }} onClick={(e) => e.stopPropagation()}>
             <div className="shrink-0 flex items-center justify-between border-b border-slate-200 px-4 py-3">
               <div>
                 <h2 className="text-lg font-semibold text-slate-800">Notifications</h2>

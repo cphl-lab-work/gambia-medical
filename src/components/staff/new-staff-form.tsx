@@ -6,6 +6,7 @@ import PhoneInput from "react-phone-input-2";
 import "react-phone-input-2/lib/style.css";
 import { getStoredFacilities, getStoredAuth } from "@/helpers/local-storage";
 import type { StaffRecord } from "./recent-staff";
+import SlidePanel from "@/components/ui/SlidePanel";
 
 const ROLE_OPTS = [
   { value: "doctor", label: "Doctor" },
@@ -72,9 +73,7 @@ export default function NewStaffForm({ initial, onSave, onClose }: NewStaffFormP
   };
 
   return (
-    <>
-      <div className="fixed inset-0 bg-black/40 z-40" onClick={onClose} aria-hidden />
-      <div className="fixed top-0 right-0 bottom-0 w-full max-w-xl bg-white shadow-2xl z-50 flex flex-col" onClick={(e) => e.stopPropagation()}>
+    <SlidePanel open onClose={onClose} title="New staff">
         <div className="shrink-0 flex items-center justify-between border-b border-slate-200 px-6 py-4">
           <div>
             <h2 className="text-lg font-semibold text-slate-800">New staff</h2>
@@ -93,51 +92,51 @@ export default function NewStaffForm({ initial, onSave, onClose }: NewStaffFormP
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="grid grid-cols-2 gap-2">
                   <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-1">First name *</label>
+                    <label className="block text-sm font-bold text-slate-700 mb-1 capitalize">First name *</label>
                     <input type="text" value={form.firstName ?? ""} onChange={(e) => setForm((p) => ({ ...p, firstName: e.target.value }))} className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm" required />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-1">Last name *</label>
+                    <label className="block text-sm font-bold text-slate-700 mb-1 capitalize">Last name *</label>
                     <input type="text" value={form.lastName ?? ""} onChange={(e) => setForm((p) => ({ ...p, lastName: e.target.value }))} className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm" required />
                   </div>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">Role</label>
+                  <label className="block text-sm font-bold text-slate-700 mb-1 capitalize">Role</label>
                   <Select classNamePrefix="rs" options={ROLE_OPTS} value={ROLE_OPTS.find((o) => o.value === (form.role ?? "")) ?? null} onChange={(opt) => setForm((p) => ({ ...p, role: opt?.value ?? "" }))} styles={selectStyles} />
                 </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">Phone</label>
+                  <label className="block text-sm font-bold text-slate-700 mb-1 capitalize">Phone</label>
                   <div className="w-full rounded-lg border border-slate-200 text-sm">
                     <PhoneInput country={"ug"} value={form.phone ?? ""} onChange={(value) => setForm((p) => ({ ...p, phone: value }))} inputClass="!w-full !h-[38px] !border-0 !text-sm !bg-transparent" />
                   </div>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">Email</label>
+                  <label className="block text-sm font-bold text-slate-700 mb-1 capitalize">Email</label>
                   <input type="email" value={form.email ?? ""} onChange={(e) => setForm((p) => ({ ...p, email: e.target.value }))} className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm" />
                 </div>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Department</label>
+                <label className="block text-sm font-bold text-slate-700 mb-1 capitalize">Department</label>
                 <input type="text" value={form.department ?? ""} onChange={(e) => setForm((p) => ({ ...p, department: e.target.value }))} className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm" />
               </div>
 
               {facilities.length > 1 ? (
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">Facility</label>
+                  <label className="block text-sm font-bold text-slate-700 mb-1 capitalize">Facility</label>
                   <Select classNamePrefix="rs" options={facilities.map((f) => ({ value: f.id, label: f.name }))} value={facilities.find((f) => f.id === selectedFacility) ? { value: selectedFacility, label: facilities.find((f) => f.id === selectedFacility)!.name } : null} onChange={(opt) => setSelectedFacility((opt as any)?.value ?? null)} styles={selectStyles} />
                 </div>
               ) : facilities.length === 1 ? (
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">Facility</label>
+                  <label className="block text-sm font-bold text-slate-700 mb-1 capitalize">Facility</label>
                   <div className="text-sm text-slate-700">{facilities[0].name}</div>
                 </div>
               ) : (
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">Facility</label>
+                  <label className="block text-sm font-bold text-slate-700 mb-1 capitalize">Facility</label>
                   <div className="text-sm text-slate-500">No facilities available</div>
                 </div>
               )}
@@ -150,7 +149,6 @@ export default function NewStaffForm({ initial, onSave, onClose }: NewStaffFormP
             <button type="submit" className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700">Save staff</button>
           </div>
         </form>
-      </div>
-    </>
+    </SlidePanel>
   );
 }

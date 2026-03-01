@@ -9,14 +9,14 @@ import {
   OneToMany,
   JoinColumn,
 } from "typeorm";
-import type { Department } from "./Department";
-import type { User } from "./User";
-import type { Doctor } from "./Doctor";
-import type { StaffAttendance } from "./StaffAttendance";
-import type { StaffLeave } from "./StaffLeave";
-import type { StaffShiftSchedule } from "./StaffShiftSchedule";
-import type { StaffPerformanceNote } from "./StaffPerformanceNote";
-import type { StaffDocument } from "./StaffDocument";
+import { Department } from "./Department";
+import { User } from "./User";
+import { Doctor } from "./Doctor";
+import { StaffAttendance } from "./StaffAttendance";
+import { StaffLeave } from "./StaffLeave";
+import { StaffShiftSchedule } from "./StaffShiftSchedule";
+import { StaffPerformanceNote } from "./StaffPerformanceNote";
+import { StaffDocument } from "./StaffDocument";
 
 export type EmployeeStatus = "active" | "inactive" | "on_leave" | "terminated" | "suspended";
 export type EmploymentType = "full_time" | "part_time" | "contract" | "intern";

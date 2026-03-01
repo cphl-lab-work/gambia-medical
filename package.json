@@ -12,10 +12,17 @@
     "db:baseline": "ts-node --project tsconfig.server.json scripts/sync-migration-baseline.ts",
     "db:seed": "ts-node --project tsconfig.server.json src/seed/run-seed.ts",
     "db:setup": "npm run db:migrate && npm run db:seed",
-    "typeorm": "ts-node --project tsconfig.server.json -r dotenv/config node_modules/typeorm/cli.js"
+    "typeorm": "ts-node --project tsconfig.server.json -r dotenv/config node_modules/typeorm/cli.js",
+    "migration:run": "ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js migration:run -d src/database/data-source.ts",
+    "knex": "ts-node --project tsconfig.server.json -r dotenv/config node_modules/knex/bin/cli.js --knexfile knexfile.ts",
+    "knex:migrate": "npm run knex -- migrate:latest",
+    "knex:migrate:rollback": "npm run knex -- migrate:rollback",
+    "knex:migrate:status": "npm run knex -- migrate:status",
+    "knex:migrate:make": "npm run knex -- migrate:make"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
+    "knex": "^3.1.0",
     "next": "14.2.18",
     "pg": "^8.19.0",
     "react": "^18.3.1",

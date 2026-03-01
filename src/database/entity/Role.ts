@@ -6,7 +6,7 @@ import {
   UpdateDateColumn,
   OneToMany,
 } from "typeorm";
-import type { User } from "./User";
+import { User } from "./User";
 
 export type RoleStatus = "active" | "inactive";
 
