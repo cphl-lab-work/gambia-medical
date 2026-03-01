@@ -3,7 +3,8 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import DashboardLayout from "@/components/DashboardLayout";
-import { getStoredAuth } from "@/helpers/local-storage";
+import { getStoredAuth, getStoredAppointments, setStoredAppointments, getStoredPrescriptions, setStoredPrescriptions } from "@/helpers/local-storage";
+import { v4 as uuidv4 } from "uuid";
 import { canCreate, canRead, canUpdate, canDelete } from "@/helpers/module-permissions";
 import Link from "next/link";
 
@@ -86,14 +87,25 @@ export default function AppointmentsPage() {
 
   useEffect(() => {
     if (!auth) return;
-    const url = filter ? `/api/appointments?status=${filter}` : "/api/appointments";
-    fetch(url)
+    const stored = getStoredAppointments() as AppointmentRecord[];
+    if (stored.length > 0) {
+      const list = filter ? stored.filter((a) => a.status === filter) : stored;
+      setAppointments(sortAppointmentsFinishedToUnfinished(list));
+      setLoading(false);
+      return;
+    }
+    fetch("/api/appointments")
       .then((r) => r.json())
       .then((data) => {
-        const list = (data.appointments ?? []) as AppointmentRecord[];
+        const fetched = (data.appointments ?? []) as AppointmentRecord[];
+        if (fetched.length) setStoredAppointments(fetched);
+        return fetched;
+      })
+      .catch(() => [])
+      .then((fetched: AppointmentRecord[]) => {
+        const list = filter ? fetched.filter((a) => a.status === filter) : fetched;
         setAppointments(sortAppointmentsFinishedToUnfinished(list));
       })
-      .catch(() => setAppointments([]))
       .finally(() => setLoading(false));
   }, [auth, filter]);
 
@@ -102,70 +114,73 @@ export default function AppointmentsPage() {
       setPrescriptionsForPatients([]);
       return;
     }
-    const names = [...new Set(appointments.map((a) => a.patientName).filter(Boolean))];
-    const ids = [...new Set(appointments.map((a) => a.patientId).filter((id): id is string => id != null))];
-    const params = new URLSearchParams();
-    if (names.length) params.set("patient_names", names.join(","));
-    if (ids.length) params.set("patient_ids", ids.join(","));
-    if (names.length === 0 && ids.length === 0) {
-      setPrescriptionsForPatients([]);
+    let stored = getStoredPrescriptions() as Array<{ patientName?: string; patientId?: string | null }>;
+    if (stored.length === 0) {
+      const names = [...new Set(appointments.map((a) => a.patientName).filter(Boolean))];
+      const ids = [...new Set(appointments.map((a) => a.patientId).filter((id): id is string => id != null))];
+      const params = new URLSearchParams();
+      if (names.length) params.set("patient_names", names.join(","));
+      if (ids.length) params.set("patient_ids", ids.join(","));
+      if (names.length > 0 || ids.length > 0) {
+        fetch(`/api/prescriptions?${params}`)
+          .then((r) => r.json())
+          .then((data) => {
+            const list = (data.prescriptions ?? []) as typeof prescriptionsForPatients;
+            setStoredPrescriptions(list);
+            setPrescriptionsForPatients(list);
+          })
+          .catch(() => {});
+      }
       return;
     }
-    fetch(`/api/prescriptions?${params}`)
-      .then((r) => r.json())
-      .then((data) => setPrescriptionsForPatients(data.prescriptions ?? []))
-      .catch(() => setPrescriptionsForPatients([]));
+    const names = new Set(appointments.map((a) => a.patientName).filter(Boolean));
+    const ids = new Set(appointments.map((a) => a.patientId).filter((id): id is string => id != null));
+    const filtered = stored.filter(
+      (p) => (p.patientName && names.has(p.patientName)) || (p.patientId && ids.has(p.patientId))
+    );
+    setPrescriptionsForPatients(filtered as typeof prescriptionsForPatients);
   }, [appointments]);
 
   const refetch = () => {
-    const url = filter ? `/api/appointments?status=${filter}` : "/api/appointments";
-    fetch(url)
-      .then((r) => r.json())
-      .then((data) => {
-        const list = (data.appointments ?? []) as AppointmentRecord[];
-        setAppointments(sortAppointmentsFinishedToUnfinished(list));
-      })
-      .catch(() => {});
+    let list = getStoredAppointments() as AppointmentRecord[];
+    if (filter) list = list.filter((a) => a.status === filter);
+    setAppointments(sortAppointmentsFinishedToUnfinished(list));
   };
 
-  const handleStart = async (id: string) => {
+  const handleStart = (id: string) => {
     setMessage(null);
-    try {
-      const res = await fetch(`/api/appointments/${id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "start" }),
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        setMessage({ type: "error", text: data.error || "Failed to start" });
-        return;
-      }
-      refetch();
-      setMessage({ type: "success", text: "Appointment started." });
-    } catch {
-      setMessage({ type: "error", text: "Request failed." });
+    const all = getStoredAppointments() as AppointmentRecord[];
+    const idx = all.findIndex((a) => a.id === id);
+    if (idx === -1) {
+      setMessage({ type: "error", text: "Appointment not found" });
+      return;
     }
+    if (all[idx].status !== "scheduled") {
+      setMessage({ type: "error", text: "Only scheduled appointments can be started" });
+      return;
+    }
+    all[idx] = { ...all[idx], status: "in_progress" };
+    setStoredAppointments(all);
+    refetch();
+    setMessage({ type: "success", text: "Appointment started." });
   };
 
-  const handleFinish = async (id: string) => {
+  const handleFinish = (id: string) => {
     setMessage(null);
-    try {
-      const res = await fetch(`/api/appointments/${id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "finish" }),
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        setMessage({ type: "error", text: data.error || "Failed to finish" });
-        return;
-      }
-      refetch();
-      setMessage({ type: "success", text: "Appointment marked completed." });
-    } catch {
-      setMessage({ type: "error", text: "Request failed." });
+    const all = getStoredAppointments() as AppointmentRecord[];
+    const idx = all.findIndex((a) => a.id === id);
+    if (idx === -1) {
+      setMessage({ type: "error", text: "Appointment not found" });
+      return;
     }
+    if (all[idx].status !== "in_progress") {
+      setMessage({ type: "error", text: "Only in-progress appointments can be finished" });
+      return;
+    }
+    all[idx] = { ...all[idx], status: "completed" };
+    setStoredAppointments(all);
+    refetch();
+    setMessage({ type: "success", text: "Appointment marked completed." });
   };
 
   const canBook = auth && canCreate(auth.role, "appointments");
@@ -174,101 +189,89 @@ export default function AppointmentsPage() {
   const canViewList = auth && canRead(auth.role, "appointments");
   const canDeleteApt = auth && canDelete(auth.role, "appointments");
 
-  const handleBook = async (e: React.FormEvent) => {
+  const handleBook = (e: React.FormEvent) => {
     e.preventDefault();
     setMessage(null);
-    try {
-      const res = await fetch("/api/appointments", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          patientName: form.patientName.trim(),
-          patientId: form.patientId.trim() || null,
-          phone: form.phone.trim() || null,
-          reason: form.reason.trim() || null,
-          preferredDoctor: form.preferredDoctor.trim() || null,
-          appointmentFee: form.appointmentFee,
-          bookedBy: auth?.role ?? "receptionist",
-        }),
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        setMessage({ type: "error", text: data.error || "Failed to book" });
-        return;
-      }
-      setMessage({ type: "success", text: "Appointment booked. Patient must pay the fee at the accountant." });
-      setForm({ patientName: "", patientId: "", phone: "", reason: "", preferredDoctor: "", appointmentFee: DEFAULT_FEE });
-      setShowBookForm(false);
-      refetch();
-    } catch {
-      setMessage({ type: "error", text: "Network error" });
-    }
+    const all = getStoredAppointments() as AppointmentRecord[];
+    const now = new Date().toISOString();
+    const newApt: AppointmentRecord = {
+      id: uuidv4(),
+      patientName: form.patientName.trim(),
+      patientId: form.patientId.trim() || null,
+      phone: form.phone.trim() || null,
+      reason: form.reason.trim() || null,
+      preferredDoctor: form.preferredDoctor.trim() || null,
+      status: "pending_payment",
+      appointmentFee: form.appointmentFee,
+      paidAt: null,
+      allocatedDoctor: null,
+      allocatedDate: null,
+      allocatedTime: null,
+      bookedBy: auth?.role ?? "receptionist",
+      createdAt: now,
+    };
+    const next = [newApt, ...all];
+    setStoredAppointments(next);
+    setMessage({ type: "success", text: "Appointment booked. Patient must pay the fee at the accountant." });
+    setForm({ patientName: "", patientId: "", phone: "", reason: "", preferredDoctor: "", appointmentFee: DEFAULT_FEE });
+    setShowBookForm(false);
+    refetch();
   };
 
-  const handleMarkPaid = async (id: string) => {
-    if (!isUuid(id)) {
-      setMessage({ type: "error", text: "Cannot update seed appointment" });
-      return;
-    }
+  const handleMarkPaid = (id: string) => {
     setPayingId(id);
     setMessage(null);
-    try {
-      const res = await fetch(`/api/appointments/${id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "record_payment" }),
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        setMessage({ type: "error", text: data.error || "Failed to record payment" });
-        return;
-      }
-      setMessage({ type: "success", text: "Payment recorded. Receptionist can now allocate date & doctor." });
-      refetch();
-    } catch {
-      setMessage({ type: "error", text: "Network error" });
-    } finally {
+    const all = getStoredAppointments() as AppointmentRecord[];
+    const idx = all.findIndex((a) => a.id === id);
+    if (idx === -1) {
+      setMessage({ type: "error", text: "Appointment not found" });
       setPayingId(null);
-    }
-  };
-
-  const handleAllocate = async (e: React.FormEvent, id: string) => {
-    e.preventDefault();
-    if (!isUuid(id)) {
-      setMessage({ type: "error", text: "Cannot update seed appointment" });
       return;
     }
-    setMessage(null);
-    try {
-      const res = await fetch(`/api/appointments/${id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          action: "allocate",
-          allocatedDoctor: allocateForm.allocatedDoctor || null,
-          allocatedDate: allocateForm.allocatedDate,
-          allocatedTime: allocateForm.allocatedTime,
-        }),
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        setMessage({ type: "error", text: data.error || "Failed to allocate" });
-        return;
-      }
-      setMessage({ type: "success", text: "Date and doctor allocated. Patient is scheduled." });
-      setAllocatingId(null);
-      setAllocateForm({ allocatedDoctor: "", allocatedDate: "", allocatedTime: "" });
-      refetch();
-    } catch {
-      setMessage({ type: "error", text: "Network error" });
-    } finally {
-      setAllocatingId(null);
+    if (all[idx].status !== "pending_payment") {
+      setMessage({ type: "error", text: "Appointment is not pending payment" });
+      setPayingId(null);
+      return;
     }
+    all[idx] = { ...all[idx], status: "paid", paidAt: new Date().toISOString() };
+    setStoredAppointments(all);
+    setMessage({ type: "success", text: "Payment recorded. Receptionist can now allocate date & doctor." });
+    refetch();
+    setPayingId(null);
   };
 
-  function isUuid(s: string): boolean {
-    return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(s);
-  }
+  const handleAllocate = (e: React.FormEvent, id: string) => {
+    e.preventDefault();
+    setMessage(null);
+    const all = getStoredAppointments() as AppointmentRecord[];
+    const idx = all.findIndex((a) => a.id === id);
+    if (idx === -1) {
+      setMessage({ type: "error", text: "Appointment not found" });
+      setAllocatingId(null);
+      return;
+    }
+    if (all[idx].status !== "paid") {
+      setMessage({ type: "error", text: "Appointment must be paid before allocating date" });
+      setAllocatingId(null);
+      return;
+    }
+    if (!allocateForm.allocatedDate || !allocateForm.allocatedTime) {
+      setMessage({ type: "error", text: "Date and time are required" });
+      return;
+    }
+    all[idx] = {
+      ...all[idx],
+      status: "scheduled",
+      allocatedDoctor: allocateForm.allocatedDoctor || all[idx].preferredDoctor,
+      allocatedDate: allocateForm.allocatedDate,
+      allocatedTime: allocateForm.allocatedTime,
+    };
+    setStoredAppointments(all);
+    setMessage({ type: "success", text: "Date and doctor allocated. Patient is scheduled." });
+    setAllocatingId(null);
+    setAllocateForm({ allocatedDoctor: "", allocatedDate: "", allocatedTime: "" });
+    refetch();
+  };
 
   if (!auth) {
     return (
@@ -416,18 +419,14 @@ export default function AppointmentsPage() {
                       <td className="py-3 pr-4 text-slate-600">{a.reason ?? "—"}</td>
                       <td className="py-3 pr-4 text-slate-600">{a.appointmentFee.toLocaleString()}</td>
                       <td className="py-3">
-                        {isUuid(a.id) ? (
-                          <button
-                            type="button"
-                            disabled={payingId === a.id}
-                            onClick={() => handleMarkPaid(a.id)}
-                            className="text-sm px-3 py-1.5 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 disabled:opacity-50"
-                          >
-                            {payingId === a.id ? "..." : "Mark as paid"}
-                          </button>
-                        ) : (
-                          <span className="text-xs text-slate-400">Seed (read-only)</span>
-                        )}
+                        <button
+                          type="button"
+                          disabled={payingId === a.id}
+                          onClick={() => handleMarkPaid(a.id)}
+                          className="text-sm px-3 py-1.5 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 disabled:opacity-50"
+                        >
+                          {payingId === a.id ? "..." : "Mark as paid"}
+                        </button>
                       </td>
                     </tr>
                   ))}
@@ -497,26 +496,20 @@ export default function AppointmentsPage() {
                       </button>
                     </form>
                   ) : (
-                    <>
-                      {isUuid(a.id) ? (
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setAllocatingId(a.id);
-                            setAllocateForm({
-                              allocatedDoctor: a.preferredDoctor ?? "",
-                              allocatedDate: "",
-                              allocatedTime: "",
-                            });
-                          }}
-                          className="text-sm px-3 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-                        >
-                          Allocate date & doctor
-                        </button>
-                      ) : (
-                        <span className="text-xs text-slate-400">Seed (read-only)</span>
-                      )}
-                    </>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setAllocatingId(a.id);
+                        setAllocateForm({
+                          allocatedDoctor: a.preferredDoctor ?? "",
+                          allocatedDate: "",
+                          allocatedTime: "",
+                        });
+                      }}
+                      className="text-sm px-3 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                    >
+                      Allocate date & doctor
+                    </button>
                   )}
                 </div>
               ))}

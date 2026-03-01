@@ -8,7 +8,7 @@ import Link from "next/link";
 import patientClerkingSeed from "@/seed/data/patient-clerking.json";
 import { useRouter } from "next/navigation";
 import DashboardLayout from "@/components/DashboardLayout";
-import { getStoredAuth } from "@/helpers/local-storage";
+import { getStoredAuth, getStoredPatients, setStoredPatients } from "@/helpers/local-storage";
 import { canRead, canCreate, canUpdate, canDelete } from "@/helpers/module-permissions";
 import { MetricCard, DonutChart, BarChart, DashboardSection } from "@/components/dashboard/DashboardCharts";
 import RecentPatients from "@/components/patients/recent-patients";
@@ -118,10 +118,19 @@ export default function MedicalClerkingPage() {
   useEffect(() => {
     if (!auth) return;
     setStats(FALLBACK_STATS);
+    const stored = getStoredPatients() as PatientRecord[];
+    if (stored.length > 0) {
+      setPatients(stored);
+      return;
+    }
     fetch("/api/patients")
       .then((r) => r.json())
       .then((data) => {
-        if (data.patients?.length) setPatients(data.patients);
+        const list = (data.patients ?? []) as PatientRecord[];
+        if (list.length) {
+          setStoredPatients(list as unknown[]);
+          setPatients(list);
+        }
       })
       .catch(() => {});
   }, [auth]);
@@ -219,6 +228,8 @@ export default function MedicalClerkingPage() {
           p.name.toLowerCase().includes(q)
       );
     }
+
+    
     if (patientsFilterInsurance) {
       out = out.filter((p) => p.insuranceType === patientsFilterInsurance);
     }
@@ -258,26 +269,14 @@ export default function MedicalClerkingPage() {
       insurancePolicy: np.insuranceType === "insurance" ? np.insurancePolicy : undefined,
     };
 
-    try {
-      if (editingPatientId) {
-        await fetch("/api/patients", {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ patient: patientData }),
-        });
-        setPatients((prev) =>
-          prev.map((p) => (p.id === editingPatientId ? patientData : p)),
-        );
-      } else {
-        await fetch("/api/patients", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ patient: patientData }),
-        });
-        setPatients((prev) => [...prev, patientData]);
-      }
-    } catch (err) {
-      console.error("Failed to save patient:", err);
+    if (editingPatientId) {
+      const next = patients.map((p) => (p.id === editingPatientId ? patientData : p));
+      setStoredPatients(next as unknown[]);
+      setPatients(next);
+    } else {
+      const next = [...patients, patientData];
+      setStoredPatients(next as unknown[]);
+      setPatients(next);
     }
 
     setNewPatient({ name: "", age: 0, gender: "", address: "", nextOfKin: "", phone: "", email: "", insuranceType: "self-pay", insurancePolicy: "" });
@@ -310,8 +309,7 @@ export default function MedicalClerkingPage() {
           <MetricCard title="HPC documented" value={d.byStatus[1]?.count ?? 0} change={4} icon={<span className="text-lg">✓</span>} />
         </div>
 
-        {/* Patient at facility section removed as requested */}
-
+        {/* Stats details (moved above Registered Patients) */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <DashboardSection title="Encounters by source">
             <DonutChart total={totalSource} segments={d.bySource} size={160} stroke={22} />
@@ -320,6 +318,19 @@ export default function MedicalClerkingPage() {
             <BarChart items={d.byStatus} max={maxBar} barColor="bg-blue-600" />
           </DashboardSection>
         </div>
+
+        {/* Registered Patients (below stats) */}
+        <DashboardSection title="Registered Patients">
+          <RecentPatients
+            patients={patients}
+            allowCreate={!!allowCreate}
+            onAddPatient={openNewPatientPanel}
+            onEditPatient={openEditPatientPanel}
+            onViewPatient={openEditPatientPanel}
+          />
+        </DashboardSection>
+
+        {/* Patient at facility section removed as requested */}
 
 
 
@@ -413,14 +424,12 @@ export default function MedicalClerkingPage() {
                           { value: "", label: "Select" },
                           { value: "Male", label: "Male" },
                           { value: "Female", label: "Female" },
-                          { value: "Other", label: "Other" },
                         ]}
                         value={
                           [
                             { value: "", label: "Select" },
                             { value: "Male", label: "Male" },
                             { value: "Female", label: "Female" },
-                            { value: "Other", label: "Other" },
                           ].find((o) => o.value === (newPatient.gender ?? "")) ?? {
                             value: "",
                             label: "Select",
@@ -698,7 +707,7 @@ export default function MedicalClerkingPage() {
             aria-hidden
           />
           <div
-            className="fixed top-0 right-0 bottom-0 w-full max-w-md bg-white shadow-2xl z-50 flex flex-col"
+            className="fixed top-0 right-0 bottom-0 w-full max-w-md lg:left-56 lg:right-0 lg:max-w-none bg-white shadow-2xl z-50 flex flex-col"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="shrink-0 flex items-center justify-between border-b border-slate-200 px-6 py-4">

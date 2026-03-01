@@ -11,6 +11,11 @@ const USERS_KEY = `${PREFIX}users`;
 const SYNC_QUEUE_KEY = `${PREFIX}sync_queue`;
 const LAST_SYNC_KEY = `${PREFIX}last_sync`;
 const CLERKING_RECORDS_KEY = `${PREFIX}clerking_records`;
+const PATIENTS_KEY = `${PREFIX}patients`;
+const APPOINTMENTS_KEY = `${PREFIX}appointments`;
+const PRESCRIPTIONS_KEY = `${PREFIX}prescriptions`;
+const FACILITIES_KEY = `${PREFIX}facilities`;
+const CURRENT_FACILITY_KEY = `${PREFIX}current_facility`;
 
 export interface StoredAuth {
   userId: string;
@@ -19,6 +24,8 @@ export interface StoredAuth {
   name: string;
   token: string;
   expiresAt: number;
+  /** Linked staff/employee id when user has login access via users.employee_id */
+  staffId?: string | null;
 }
 
 export function getStoredAuth(): StoredAuth | null {
@@ -186,4 +193,211 @@ export function getClerkingRecords(): ClerkingRecord[] {
 export function setClerkingRecords(records: ClerkingRecord[]): void {
   if (typeof window === "undefined") return;
   localStorage.setItem(CLERKING_RECORDS_KEY, JSON.stringify(records));
+}
+
+/** Patients – stored locally until sync to Postgres. */
+export function getStoredPatients(): unknown[] {
+  if (typeof window === "undefined") return [];
+  try {
+    const raw = localStorage.getItem(PATIENTS_KEY);
+    if (!raw) return [];
+    const arr = JSON.parse(raw);
+    return Array.isArray(arr) ? arr : [];
+  } catch {
+    return [];
+  }
+}
+
+export function setStoredPatients(patients: unknown[]): void {
+  if (typeof window === "undefined") return;
+  localStorage.setItem(PATIENTS_KEY, JSON.stringify(patients));
+}
+
+/** Appointments – stored locally until sync to Postgres. */
+export function getStoredAppointments(): unknown[] {
+  if (typeof window === "undefined") return [];
+  try {
+    const raw = localStorage.getItem(APPOINTMENTS_KEY);
+    if (!raw) return [];
+    const arr = JSON.parse(raw);
+    return Array.isArray(arr) ? arr : [];
+  } catch {
+    return [];
+  }
+}
+
+export function setStoredAppointments(appointments: unknown[]): void {
+  if (typeof window === "undefined") return;
+  localStorage.setItem(APPOINTMENTS_KEY, JSON.stringify(appointments));
+}
+
+/** Prescriptions – stored locally until sync to Postgres. */
+export function getStoredPrescriptions(): unknown[] {
+  if (typeof window === "undefined") return [];
+  try {
+    const raw = localStorage.getItem(PRESCRIPTIONS_KEY);
+    if (!raw) return [];
+    const arr = JSON.parse(raw);
+    return Array.isArray(arr) ? arr : [];
+  } catch {
+    return [];
+  }
+}
+
+export function setStoredPrescriptions(prescriptions: unknown[]): void {
+  if (typeof window === "undefined") return;
+  localStorage.setItem(PRESCRIPTIONS_KEY, JSON.stringify(prescriptions));
+}
+
+/** Facility – stored locally for quick access. */
+export interface StoredFacility {
+  id: string;
+  code: string;
+  name: string;
+  facilityType: string;
+  address: string;
+  phone: string;
+  email: string;
+  district: string;
+  region: string;
+  description: string;
+  facilityAdminId: string | null;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt: string | null;
+}
+
+export function getStoredFacilities(): StoredFacility[] {
+  if (typeof window === "undefined") return [];
+  try {
+    const raw = localStorage.getItem(FACILITIES_KEY);
+    if (!raw) return [];
+    const arr = JSON.parse(raw);
+    return Array.isArray(arr) ? arr : [];
+  } catch {
+    return [];
+  }
+}
+
+export function setStoredFacilities(facilities: StoredFacility[]): void {
+  if (typeof window === "undefined") return;
+  localStorage.setItem(FACILITIES_KEY, JSON.stringify(facilities));
+}
+
+export function getStoredFacilityById(id: string): StoredFacility | null {
+  const facilities = getStoredFacilities();
+  return facilities.find((f) => f.id === id) || null;
+}
+
+export function getStoredFacilityByCode(code: string): StoredFacility | null {
+  const facilities = getStoredFacilities();
+  return facilities.find((f) => f.code === code) || null;
+}
+
+export function addStoredFacility(facility: StoredFacility): void {
+  const facilities = getStoredFacilities();
+  const exists = facilities.some((f) => f.id === facility.id);
+  if (!exists) {
+    facilities.push(facility);
+    setStoredFacilities(facilities);
+  }
+}
+
+export function updateStoredFacility(facility: StoredFacility): void {
+  const facilities = getStoredFacilities();
+  const index = facilities.findIndex((f) => f.id === facility.id);
+  if (index >= 0) {
+    facilities[index] = facility;
+    setStoredFacilities(facilities);
+  } else {
+    facilities.push(facility);
+    setStoredFacilities(facilities);
+  }
+}
+
+export function removeStoredFacility(id: string): void {
+  const facilities = getStoredFacilities();
+  const filtered = facilities.filter((f) => f.id !== id);
+  setStoredFacilities(filtered);
+}
+
+/** Current facility – for context-aware operations. */
+export function getCurrentFacility(): StoredFacility | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = localStorage.getItem(CURRENT_FACILITY_KEY);
+    if (!raw) return null;
+    return JSON.parse(raw) as StoredFacility;
+  } catch {
+    return null;
+  }
+}
+
+export function setCurrentFacility(facility: StoredFacility | null): void {
+  if (typeof window === "undefined") return;
+  if (facility) {
+    localStorage.setItem(CURRENT_FACILITY_KEY, JSON.stringify(facility));
+  } else {
+    localStorage.removeItem(CURRENT_FACILITY_KEY);
+  }
+}
+
+/**
+ * Sync localStorage data to Postgres APIs. Call when DB is ready.
+ * Returns a promise that resolves when sync completes (or fails).
+ */
+export async function syncToPostgres(): Promise<{ ok: boolean; errors: string[] }> {
+  const errors: string[] = [];
+  try {
+    const facilities = getStoredFacilities();
+    for (const f of facilities) {
+      const res = await fetch("/api/facilities", {
+        method: (f as { id?: string }).id ? "PUT" : "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(f),
+      });
+      if (!res.ok) errors.push(`Facility ${f.name}: ${res.status}`);
+    }
+    const patients = getStoredPatients();
+    for (const p of patients) {
+      const res = await fetch("/api/patients", {
+        method: (p as { id?: string }).id ? "PUT" : "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ patient: p }),
+      });
+      if (!res.ok) errors.push(`Patient ${(p as { name?: string }).name ?? "?"}: ${res.status}`);
+    }
+    const appointments = getStoredAppointments();
+    for (const a of appointments) {
+      const res = await fetch("/api/appointments", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(a),
+      });
+      if (!res.ok) errors.push(`Appointment ${(a as { patientName?: string }).patientName ?? "?"}: ${res.status}`);
+    }
+    const prescriptions = getStoredPrescriptions();
+    for (const rx of prescriptions) {
+      const res = await fetch("/api/prescriptions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(rx),
+      });
+      if (!res.ok) errors.push(`Prescription ${(rx as { medication?: string }).medication ?? "?"}: ${res.status}`);
+    }
+    const clerking = getClerkingRecords();
+    for (const c of clerking) {
+      const res = await fetch("/api/clerking", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(c),
+      });
+      if (!res.ok) errors.push(`Clerking ${c.patientName}: ${res.status}`);
+    }
+    return { ok: errors.length === 0, errors };
+  } catch (e) {
+    errors.push(String(e));
+    return { ok: false, errors };
+  }
 }

@@ -4,6 +4,7 @@ import { useState, useRef, useEffect, useMemo } from "react";
 import Select from "react-select";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import ViewPatientPanel from "./view-patient-panel";
 
 export interface PatientRecord {
   id: string;
@@ -30,7 +31,7 @@ interface RecentPatientsProps {
   allowCreate?: boolean;
   onAddPatient: () => void;
   onEditPatient: (patient: PatientRecord) => void;
-  onViewPatient: (patient: PatientRecord) => void;
+  onViewPatient?: (patient: PatientRecord) => void;
 }
 
 const INSURANCE_OPTS = [
@@ -79,6 +80,7 @@ export default function RecentPatients({
   const [sortBy, setSortBy] = useState<"name" | "id">("name");
   const [filterOpen, setFilterOpen] = useState(false);
   const [actionRowId, setActionRowId] = useState<string | null>(null);
+  const [viewPatient, setViewPatient] = useState<PatientRecord | null>(null);
   const filterRef = useRef<HTMLDivElement | null>(null);
   const actionRef = useRef<HTMLDivElement | null>(null);
 
@@ -240,10 +242,12 @@ export default function RecentPatients({
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-slate-200 text-slate-500 text-left text-xs uppercase tracking-wider">
-              <th className="pb-3 pt-4 px-4">Name</th>
-              <th className="pb-3 pt-4 px-4">Phone</th>
-              <th className="pb-3 pt-4 px-4">Next of Kin</th>
-              <th className="pb-3 pt-4 px-4">Registration Date</th>
+                <th className="pb-3 pt-4 px-4">Name</th>
+                <th className="pb-3 pt-4 px-4">Gender</th>
+                <th className="pb-3 pt-4 px-4">District</th>
+                <th className="pb-3 pt-4 px-4">Phone</th>
+                <th className="pb-3 pt-4 px-4">Next of Kin</th>
+                <th className="pb-3 pt-4 px-4">Registration Date</th>
               <th className="pb-3 pt-4 px-4 text-right">Actions</th>
             </tr>
           </thead>
@@ -261,12 +265,31 @@ export default function RecentPatients({
                     <div className="font-medium text-slate-800">{p.name}</div>
                     <div className="text-xs text-slate-500">{p.uhid}</div>
                   </td>
+                    <td className="py-3 px-4 text-slate-600">{p.gender || "—"}</td>
+                    <td className="py-3 px-4 text-slate-600">{p.district || "—"}</td>
                   <td className="py-3 px-4 text-slate-600">{p.phone}</td>
                   <td className="py-3 px-4 text-slate-600">
-                    {p.nextOfKin ? `${p.nextOfKin}${p.nextOfKinRelationship ? ` (${p.nextOfKinRelationship})` : ""}` : "—"}
+                    {p.nextOfKin ? (
+                      <>
+                        <div>{p.nextOfKin}</div>
+                        {p.nextOfKinRelationship && (
+                          <div className="text-xs text-slate-400">{p.nextOfKinRelationship}</div>
+                        )}
+                      </>
+                    ) : (
+                      "—"
+                    )}
                   </td>
                   <td className="py-3 px-4 text-slate-600">
-                    {p.createdAt ? new Date(p.createdAt).toLocaleDateString("en-GB", { day: "2-digit", month: "2-digit", year: "2-digit" }) : "—"}
+                    {p.createdAt
+                      ? new Date(p.createdAt).toLocaleString("en-GB", {
+                          day: "2-digit",
+                          month: "2-digit",
+                          year: "2-digit",
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })
+                      : "—"}
                   </td>
                   <td className="py-3 px-4 text-right">
                     <div
@@ -288,7 +311,7 @@ export default function RecentPatients({
                           <button
                             type="button"
                             onClick={() => {
-                              onViewPatient(p);
+                              setViewPatient(p);
                               setActionRowId(null);
                             }}
                             className="block w-full px-3 py-2 text-left text-sm text-slate-700 hover:bg-slate-50"
@@ -316,6 +339,17 @@ export default function RecentPatients({
                           >
                             Start OPD
                           </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              sessionStorage.setItem(`chart_patient_${p.id}`, JSON.stringify(p));
+                              setActionRowId(null);
+                              router.push(`/dashboard/medical-clerking/chart?patientId=${p.id}`);
+                            }}
+                            className="block w-full px-3 py-2 text-left text-sm text-slate-700 hover:bg-slate-50"
+                          >
+                            Patient Chart
+                          </button>
                         </div>
                       )}
                     </div>
@@ -326,6 +360,17 @@ export default function RecentPatients({
           </tbody>
         </table>
       </div>
+
+      {viewPatient && (
+        <ViewPatientPanel
+          patient={viewPatient}
+          onClose={() => setViewPatient(null)}
+          onEdit={(p) => {
+            setViewPatient(null);
+            onEditPatient(p);
+          }}
+        />
+      )}
     </div>
   );
 }

@@ -9,6 +9,7 @@ import * as fs from "fs";
 import * as path from "path";
 import { AppDataSource } from "../database/data-source";
 import { User } from "../database/entity/User";
+import { Facility } from "../database/entity/Facility";
 import * as bcrypt from "bcryptjs";
 
 const SEED_DIR = path.join(__dirname, "data");
@@ -21,30 +22,83 @@ interface SeedUser {
   role: string;
 }
 
+interface SeedFacility {
+  id: string;
+  code: string;
+  name: string;
+  facilityType: string;
+  address: string;
+  phone: string;
+  email: string;
+  district: string;
+  region: string;
+  description: string;
+  facilityAdminId: string | null;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt: string | null;
+}
+
 async function run() {
   const usersPath = path.join(SEED_DIR, "users.json");
-  const raw = fs.readFileSync(usersPath, "utf-8");
-  const users: SeedUser[] = JSON.parse(raw);
+  const facilitiesPath = path.join(SEED_DIR, "facilities.json");
+
+  const rawUsers = fs.readFileSync(usersPath, "utf-8");
+  const rawFacilities = fs.readFileSync(facilitiesPath, "utf-8");
+
+  const users: SeedUser[] = JSON.parse(rawUsers);
+  const facilities: SeedFacility[] = JSON.parse(rawFacilities);
 
   await AppDataSource.initialize();
-  const repo = AppDataSource.getRepository(User);
 
+  // Seed Users
+  const userRepo = AppDataSource.getRepository(User);
   for (const u of users) {
-    const existing = await repo.findOne({ where: { email: u.email } });
+    const existing = await userRepo.findOne({ where: { email: u.email } });
     if (existing) {
-      console.log("Skip (exists):", u.email);
+      console.log("Skip user (exists):", u.email);
       continue;
     }
     const hash = await bcrypt.hash(u.password, 10);
-    const user = repo.create({
+    const user = userRepo.create({
       id: u.id,
       email: u.email,
       passwordHash: hash,
       name: u.name,
       role: u.role,
     });
-    await repo.save(user);
-    console.log("Created:", u.email, u.role);
+    await userRepo.save(user);
+    console.log("Created user:", u.email, u.role);
+  }
+
+  // Seed Facilities
+  const facilityRepo = AppDataSource.getRepository(Facility);
+  for (const f of facilities) {
+    const existing = await facilityRepo.findOne({ where: { code: f.code } });
+    if (existing) {
+      console.log("Skip facility (exists):", f.code, f.name);
+      continue;
+    }
+    const facility = facilityRepo.create({
+      id: f.id,
+      code: f.code,
+      name: f.name,
+      facilityType: f.facilityType,
+      address: f.address,
+      phone: f.phone,
+      email: f.email,
+      district: f.district,
+      region: f.region,
+      description: f.description,
+      facilityAdminId: f.facilityAdminId,
+      isActive: f.isActive,
+      createdAt: new Date(f.createdAt),
+      updatedAt: new Date(f.updatedAt),
+      deletedAt: f.deletedAt ? new Date(f.deletedAt) : null,
+    });
+    await facilityRepo.save(facility);
+    console.log("Created facility:", f.code, f.name);
   }
 
   await AppDataSource.destroy();

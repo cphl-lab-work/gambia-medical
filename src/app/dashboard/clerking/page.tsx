@@ -43,7 +43,6 @@ const GENDERS = [
   { value: "", label: "Select..." },
   { value: "Male", label: "Male" },
   { value: "Female", label: "Female" },
-  { value: "Other", label: "Other" },
 ];
 
 /** Country code + flag for phone input. */

@@ -24,7 +24,6 @@ const GENDER_OPTIONS = [
   { value: "", label: "Select" },
   { value: "Male", label: "Male" },
   { value: "Female", label: "Female" },
-  { value: "Other", label: "Other" },
 ];
 
 const RELATIONSHIP_OPTIONS = [
