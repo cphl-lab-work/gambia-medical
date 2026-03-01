@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import RecentPatients, { PatientRecord } from "@/components/patients/recent-patients";
 import NewPatientForm from "@/components/patients/new-patient-form";
 import { getStoredPatients, setStoredPatients } from "@/helpers/local-storage";
+import { DashboardSection, DonutChart, GroupedBarChart, QueueBars } from "@/components/dashboard/DashboardCharts";
 
 interface Statistic {
   label: string;
@@ -135,6 +136,8 @@ export default function ReceptionistDashboard() {
   const [data, setData] = useState<ReceptionistData | null>(null);
   const [calendarMonth, setCalendarMonth] = useState(new Date());
   const [patients, setPatients] = useState<PatientRecord[]>([]);
+  // Use custom tab keys for stats overview
+  const [statsTab, setStatsTab] = useState<"patient-flow" | "queue-status" | "appointments" | "payments">("patient-flow");
   const [showNewPatientForm, setShowNewPatientForm] = useState(false);
   const [editingPatientId, setEditingPatientId] = useState<string | null>(null);
   const [pendingEncId, setPendingEncId] = useState<string | null>(null);
@@ -199,43 +202,222 @@ export default function ReceptionistDashboard() {
       const d = new Date(a.date);
       return d >= today && d < weekEnd;
     }).length;
-    return { today: todayCount, thisWeek: thisWeekCount };
+    // Calculate this month
+    const thisMonthCount = upcomingAppointments.filter((a) => {
+      const d = new Date(a.date);
+      return d.getFullYear() === today.getFullYear() && d.getMonth() === today.getMonth();
+    }).length;
+    return { today: todayCount, thisWeek: thisWeekCount, thisMonth: thisMonthCount };
   })();
+
+  // ── Graphical dashboard data ─────────────────────────────
+  const todaySummary = [
+    {
+      label: "Total Patients Today",
+      value: 85,
+      icon: (
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0" />
+        </svg>
+      ),
+      color: "bg-blue-50 text-blue-600",
+      ring: "border-blue-100",
+    },
+    {
+      label: "New Registrations",
+      value: 20,
+      icon: (
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+        </svg>
+      ),
+      color: "bg-emerald-50 text-emerald-600",
+      ring: "border-emerald-100",
+    },
+    {
+      label: "Waiting",
+      value: 14,
+      icon: (
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+      ),
+      color: "bg-amber-50 text-amber-600",
+      ring: "border-amber-100",
+    },
+    {
+      label: "Completed Visits",
+      value: 51,
+      icon: (
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+      ),
+      color: "bg-violet-50 text-violet-600",
+      ring: "border-violet-100",
+    },
+  ];
+
+  const appointmentStatus = [
+    { label: "Scheduled", value: 32, color: "#3b82f6" },
+    { label: "Checked In", value: 18, color: "#10b981" },
+    { label: "Completed", value: 51, color: "#8b5cf6" },
+    { label: "Cancelled", value: 4, color: "#f43f5e" },
+  ];
+
+  // Map custom tab keys to data
+  const patientFlowData: Record<string, Array<{ label: string; male: number; female: number }>> = {
+    "patient-flow": [
+      { label: "8 AM",  male: 3,  female: 2  },
+      { label: "9 AM",  male: 7,  female: 5  },
+      { label: "10 AM", male: 10, female: 8  },
+      { label: "11 AM", male: 8,  female: 7  },
+      { label: "12 PM", male: 5,  female: 4  },
+      { label: "1 PM",  male: 4,  female: 3  },
+      { label: "2 PM",  male: 6,  female: 5  },
+      { label: "3 PM",  male: 4,  female: 4  },
+    ],
+    "queue-status": [
+      { label: "Mon", male: 18, female: 15 },
+      { label: "Tue", male: 22, female: 19 },
+      { label: "Wed", male: 25, female: 21 },
+      { label: "Thu", male: 20, female: 17 },
+      { label: "Fri", male: 28, female: 24 },
+      { label: "Sat", male: 14, female: 12 },
+      { label: "Sun", male: 9,  female: 7  },
+    ],
+    "appointments": [
+      { label: "Week 1", male: 92,  female: 78  },
+      { label: "Week 2", male: 108, female: 91  },
+      { label: "Week 3", male: 97,  female: 83  },
+      { label: "Week 4", male: 115, female: 99  },
+    ],
+  };
+
+  const patientFlowSeries = [
+    { key: "male",   label: "Male",   color: "#3b82f6" },
+    { key: "female", label: "Female", color: "#10b981" },
+  ];
+
+  const queueDepts = [
+    { name: "General Medicine", waiting: 6, color: "#3b82f6" },
+    { name: "Dental",           waiting: 3, color: "#10b981" },
+    { name: "Paediatrics",      waiting: 8, color: "#3b82f6" },
+    { name: "Gynaecology",      waiting: 4, color: "#10b981" },
+    { name: "Eye Clinic",       waiting: 2, color: "#3b82f6" },
+  ];
+
+  const paymentMethods = [
+    { label: "Cash", value: 38, color: "#10b981" },
+    { label: "Insurance", value: 29, color: "#3b82f6" },
+    { label: "Mobile Money", value: 14, color: "#f59e0b" },
+    { label: "Card", value: 4, color: "#8b5cf6" },
+  ];
 
   return (
     <div className="space-y-6">
+      {/* ── 1. Today's Patients Summary ─────────────────────── */}
+      {/* <div>
+        <h2 className="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-3">
+          Today&rsquo;s Patients Summary
+        </h2>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          {todaySummary.map((s) => (
+            <div
+              key={s.label}
+              className={`rounded-xl border ${s.ring} bg-white p-5 flex items-start gap-3`}
+            >
+              <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${s.color}`}>
+                {s.icon}
+              </div>
+              <div>
+                <p className="text-2xl font-bold text-slate-800 tabular-nums leading-tight">{s.value}</p>
+                <p className="text-xs text-slate-500 mt-0.5 leading-snug">{s.label}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div> */}
+
+      {/* ── Statistic ───────────────────────────────────────── */}
+      <div className="rounded-xl border border-slate-200 bg-white p-5">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="font-semibold text-slate-800">Statistic</h2>
+          <button type="button" className="p-1 text-slate-400 hover:text-slate-600">⋯</button>
+        </div>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+          {statistics.map((stat) => (
+            <div key={stat.label} className="text-center p-3 rounded-lg bg-slate-50">
+              <div className="flex justify-center mb-1">
+                {stat.icon === "appointments" && (
+                  <svg className="w-8 h-8 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                )}
+                {stat.icon === "newPatients" && (
+                  <svg className="w-8 h-8 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" /></svg>
+                )}
+                {stat.icon === "pendingClerking" && (
+                  <svg className="w-8 h-8 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" /></svg>
+                )}
+                {stat.icon === "checkedIn" && (
+                  <svg className="w-8 h-8 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                )}
+              </div>
+              <p className="text-2xl font-semibold text-slate-800">{stat.value}</p>
+              <p className="text-xs text-slate-500 mt-0.5">{stat.label}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="rounded-xl border border-slate-200 bg-white p-5">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="font-semibold text-slate-800">Today's Stats Overview</h2>
+        </div>
+        <div className="flex items-center gap-1 rounded-lg border border-slate-200 bg-slate-50 p-0.5 mb-4">
+          {[
+            { key: "patient-flow", label: "Patient Flow" },
+            { key: "queue-status", label: "Patients Queue Status" },
+            { key: "appointments", label: "Appointments" }, 
+          ].map((tab) => (
+            <button
+              key={tab.key}
+              type="button"
+              onClick={() => setStatsTab(tab.key as any)}
+              className={`px-3 py-2 text-sm font-medium rounded-md transition-all ${
+                statsTab === tab.key
+                  ? "bg-blue-600 text-white shadow"
+                  : "bg-transparent text-slate-500 hover:text-slate-700"
+              }`}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-1 gap-6">
+          {statsTab === "patient-flow" && (
+            <DashboardSection title="Patient Flow">
+              <GroupedBarChart points={patientFlowData["patient-flow"]} series={patientFlowSeries} />
+            </DashboardSection>
+          )}
+          {statsTab === "queue-status" && (
+            <DashboardSection title="Patients Queue Status">
+              <QueueBars departments={queueDepts} />
+            </DashboardSection>
+          )}
+          {statsTab === "appointments" && (
+            <div className="grid grid-cols-1 gap-6">
+              <DashboardSection title="Appointment Status">
+                <DonutChart total={appointmentStatus.reduce((sum, item) => sum + item.value, 0)} segments={appointmentStatus} />
+              </DashboardSection>
+            </div>
+
+          )}
+        </div>
+      </div>
+
       <div>
         <div className="space-y-6">
-          {/* Statistic */}
-          <div className="rounded-xl border border-slate-200 bg-white p-5">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="font-semibold text-slate-800">Statistic</h2>
-              <button type="button" className="p-1 text-slate-400 hover:text-slate-600">⋯</button>
-            </div>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-              {statistics.map((stat) => (
-                <div key={stat.label} className="text-center p-3 rounded-lg bg-slate-50">
-                  <div className="flex justify-center mb-1">
-                    {stat.icon === "appointments" && (
-                      <svg className="w-8 h-8 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
-                    )}
-                    {stat.icon === "newPatients" && (
-                      <svg className="w-8 h-8 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" /></svg>
-                    )}
-                    {stat.icon === "pendingClerking" && (
-                      <svg className="w-8 h-8 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" /></svg>
-                    )}
-                    {stat.icon === "checkedIn" && (
-                      <svg className="w-8 h-8 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                    )}
-                  </div>
-                  <p className="text-2xl font-semibold text-slate-800">{stat.value}</p>
-                  <p className="text-xs text-slate-500 mt-0.5">{stat.label}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-
           {/* Upcoming Appointments */}
           <div className="rounded-xl border border-slate-200 bg-white p-5">
             <div className="flex items-center justify-between mb-4">
@@ -250,6 +432,10 @@ export default function ReceptionistDashboard() {
               <div className="rounded-lg bg-slate-50 border border-slate-100 px-3 py-2.5 text-center">
                 <p className="text-xl font-bold text-slate-800 tabular-nums">{upcomingStats.thisWeek}</p>
                 <p className="text-xs font-medium text-slate-500">This week</p>
+              </div>
+              <div className="rounded-lg bg-slate-50 border border-slate-100 px-3 py-2.5 text-center">
+                <p className="text-xl font-bold text-slate-800 tabular-nums">{upcomingStats.thisMonth}</p>
+                <p className="text-xs font-medium text-slate-500">This month</p>
               </div>
               <div className="rounded-lg bg-slate-50 border border-slate-100 px-3 py-2.5 text-center">
                 <p className="text-xl font-bold text-slate-800 tabular-nums">{upcomingAppointments.length}</p>

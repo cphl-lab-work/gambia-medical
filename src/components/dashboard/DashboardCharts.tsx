@@ -135,6 +135,200 @@ export function BarChart({
   );
 }
 
+/**
+ * Grouped vertical bar chart — ideal for comparing two series (e.g. Male vs Female)
+ * across time slots. Built with SVG for pixel-perfect rendering at any size.
+ */
+export function GroupedBarChart({
+  points,
+  series,
+}: {
+  points: Array<{ label: string } & Record<string, number | string>>;
+  series: Array<{ key: string; label: string; color: string }>;
+}) {
+  const W = 480;
+  const H = 180;
+  const PAD = { top: 24, right: 12, bottom: 32, left: 28 };
+  const plotW = W - PAD.left - PAD.right;
+  const plotH = H - PAD.top - PAD.bottom;
+
+  const allValues = points.flatMap((p) => series.map((s) => (p[s.key] as number) || 0));
+  const maxVal = Math.max(...allValues, 1);
+  // Round max up to a nice ceiling
+  const yMax = Math.ceil(maxVal / 5) * 5 || 5;
+  const yTicks = [0, 0.25, 0.5, 0.75, 1].map((f) => Math.round(f * yMax));
+
+  const groupW = plotW / points.length;
+  const barW = Math.min((groupW / series.length) * 0.7, 22);
+  const groupGap = groupW - barW * series.length;
+
+  const toY = (v: number) => PAD.top + plotH - (v / yMax) * plotH;
+
+  return (
+    <div>
+      {/* Legend */}
+      <div className="flex items-center gap-5 mb-3 flex-wrap">
+        {series.map((s) => (
+          <div key={s.key} className="flex items-center gap-1.5">
+            <span
+              className="w-3 h-3 rounded-sm shrink-0"
+              style={{ backgroundColor: s.color }}
+            />
+            <span className="text-xs font-medium text-slate-500">{s.label}</span>
+          </div>
+        ))}
+      </div>
+
+      <svg
+        viewBox={`0 0 ${W} ${H}`}
+        width="100%"
+        style={{ display: "block", overflow: "visible" }}
+        aria-hidden
+      >
+        {/* Horizontal grid lines + Y labels */}
+        {yTicks.map((tick) => {
+          const y = toY(tick);
+          return (
+            <g key={tick}>
+              <line
+                x1={PAD.left}
+                x2={W - PAD.right}
+                y1={y}
+                y2={y}
+                stroke={tick === 0 ? "#cbd5e1" : "#f1f5f9"}
+                strokeWidth={tick === 0 ? 1 : 0.8}
+              />
+              {tick > 0 && (
+                <text
+                  x={PAD.left - 4}
+                  y={y + 3}
+                  textAnchor="end"
+                  fontSize={9}
+                  fill="#94a3b8"
+                  fontFamily="system-ui, sans-serif"
+                >
+                  {tick}
+                </text>
+              )}
+            </g>
+          );
+        })}
+
+        {/* Bars */}
+        {points.map((p, pi) => {
+          const groupX = PAD.left + pi * groupW + groupGap / 2;
+          return (
+            <g key={pi}>
+              {series.map((s, si) => {
+                const val = (p[s.key] as number) || 0;
+                const barX = groupX + si * barW;
+                const barTop = toY(val);
+                const barH = PAD.top + plotH - barTop;
+
+                return (
+                  <g key={s.key}>
+                    {/* Bar body */}
+                    <rect
+                      x={barX}
+                      y={barTop}
+                      width={barW - 1.5}
+                      height={Math.max(barH, 2)}
+                      rx={0}
+                      ry={0}
+                      fill={s.color}
+                      opacity={0.9}
+                    />
+                    {/* Value label above bar */}
+                    {val > 0 && (
+                      <text
+                        x={barX + (barW - 1.5) / 2}
+                        y={barTop - 3}
+                        textAnchor="middle"
+                        fontSize={8.5}
+                        fontWeight="600"
+                        fill="#475569"
+                        fontFamily="system-ui, sans-serif"
+                      >
+                        {val}
+                      </text>
+                    )}
+                  </g>
+                );
+              })}
+
+              {/* X-axis label */}
+              <text
+                x={groupX + (barW * series.length) / 2}
+                y={H - 6}
+                textAnchor="middle"
+                fontSize={9.5}
+                fill="#94a3b8"
+                fontFamily="system-ui, sans-serif"
+              >
+                {p.label}
+              </text>
+            </g>
+          );
+        })}
+      </svg>
+    </div>
+  );
+}
+
+export function QueueBars({
+  departments,
+  maxOverride,
+}: {
+  departments: Array<{ name: string; waiting: number; color: string }>;
+  maxOverride?: number;
+}) {
+  const max = maxOverride ?? Math.max(...departments.map((d) => d.waiting), 1);
+  const total = departments.reduce((s, d) => s + d.waiting, 0);
+  return (
+    <div className="space-y-3">
+      {departments.map((dept) => {
+        const pct = Math.round((dept.waiting / total) * 100);
+        const barPct = (dept.waiting / max) * 100;
+        return (
+          <div key={dept.name}>
+            <div className="flex items-center justify-between mb-1.5">
+              <div className="flex items-center gap-2 min-w-0">
+                <span
+                  className="w-2.5 h-2.5 shrink-0"
+                  style={{ backgroundColor: dept.color }}
+                />
+                <span className="text-sm text-slate-700 font-medium truncate">{dept.name}</span>
+              </div>
+              <div className="flex items-center gap-2.5 shrink-0 ml-2">
+                <span className="text-xs text-slate-400 tabular-nums">{pct}%</span>
+                <span
+                  className="text-sm font-bold tabular-nums w-6 text-right"
+                  style={{ color: dept.color }}
+                >
+                  {dept.waiting}
+                </span>
+              </div>
+            </div>
+            <div className="h-5 bg-slate-100 overflow-hidden" style={{ borderRadius: 0 }}>
+              <div
+                className="h-full transition-all duration-500"
+                style={{
+                  width: `${barPct}%`,
+                  backgroundColor: dept.color,
+                  borderRadius: 0,
+                }}
+              />
+            </div>
+          </div>
+        );
+      })}
+      <p className="text-xs text-slate-400 pt-1.5 text-right tabular-nums">
+        {total} total waiting
+      </p>
+    </div>
+  );
+}
+
 export function DashboardSection({
   title,
   children,

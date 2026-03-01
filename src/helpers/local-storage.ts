@@ -16,6 +16,7 @@ const APPOINTMENTS_KEY = `${PREFIX}appointments`;
 const PRESCRIPTIONS_KEY = `${PREFIX}prescriptions`;
 const FACILITIES_KEY = `${PREFIX}facilities`;
 const CURRENT_FACILITY_KEY = `${PREFIX}current_facility`;
+const IPD_ADMISSIONS_KEY = `${PREFIX}ipd_admissions`;
 
 export interface StoredAuth {
   userId: string;
@@ -341,6 +342,47 @@ export function setCurrentFacility(facility: StoredFacility | null): void {
   } else {
     localStorage.removeItem(CURRENT_FACILITY_KEY);
   }
+}
+
+/** IPD (Inpatient Department) admission record. */
+export type IpdAdmissionStatus = "admitted" | "discharged" | "transferred";
+
+export interface IpdAdmission {
+  id: string;
+  patientId: string;
+  patientName: string;
+  patientUhid: string;
+  patientGender?: string | null;
+  patientAge?: number | null;
+  patientPhone?: string | null;
+  ward: string;
+  bedNumber: string;
+  admittingDoctor: string;
+  admissionDate: string;
+  admissionTime: string;
+  diagnosis: string;
+  notes: string | null;
+  status: IpdAdmissionStatus;
+  dischargeDate?: string | null;
+  admittedBy: string;
+  createdAt: string;
+}
+
+export function getStoredIpdAdmissions(): IpdAdmission[] {
+  if (typeof window === "undefined") return [];
+  try {
+    const raw = localStorage.getItem(IPD_ADMISSIONS_KEY);
+    if (!raw) return [];
+    const arr = JSON.parse(raw);
+    return Array.isArray(arr) ? arr : [];
+  } catch {
+    return [];
+  }
+}
+
+export function setStoredIpdAdmissions(admissions: IpdAdmission[]): void {
+  if (typeof window === "undefined") return;
+  localStorage.setItem(IPD_ADMISSIONS_KEY, JSON.stringify(admissions));
 }
 
 /**

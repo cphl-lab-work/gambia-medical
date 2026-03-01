@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import SlidePanel from "@/components/ui/SlidePanel";
 
 interface User {
   id: string;
@@ -163,27 +164,13 @@ export default function FacilityTeamModal({
     }
   };
 
-  if (!isOpen) return null;
-
   const getStaffName = (staffId: string) => {
     const user = staffUsers.find((u) => u.id === staffId);
     return user?.name || "Unknown";
   };
 
   return (
-    <>
-      {/* Overlay */}
-      <div
-        className="fixed inset-0 bg-black/40 z-40"
-        onClick={onClose}
-        aria-hidden
-      />
-
-      {/* Modal */}
-      <div
-        className="fixed top-0 right-0 bottom-0 w-full max-w-xl bg-white shadow-2xl z-50 flex flex-col"
-        onClick={(e) => e.stopPropagation()}
-      >
+    <SlidePanel open={isOpen} onClose={onClose} title="Manage Facility Team">
         {/* Header */}
         <div className="shrink-0 flex items-center justify-between border-b border-slate-200 px-6 py-4">
           <div>
@@ -228,7 +215,7 @@ export default function FacilityTeamModal({
             <h3 className="font-semibold text-slate-800 mb-3">Add Staff Member</h3>
             <form onSubmit={handleAddTeamMember} className="space-y-3">
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">
+                <label className="block text-sm font-bold text-slate-700 mb-1 capitalize">
                   Select Staff *
                 </label>
                 <select
@@ -354,7 +341,6 @@ export default function FacilityTeamModal({
             Done
           </button>
         </div>
-      </div>
-    </>
+    </SlidePanel>
   );
 }
