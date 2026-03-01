@@ -7,8 +7,10 @@
 import "reflect-metadata";
 import * as fs from "fs";
 import * as path from "path";
+import * as crypto from "crypto";
 import { AppDataSource } from "../database/data-source";
 import { User } from "../database/entity/User";
+import { Role } from "../database/entity/Role";
 import { Facility } from "../database/entity/Facility";
 import * as bcrypt from "bcryptjs";
 
@@ -52,21 +54,29 @@ async function run() {
 
   await AppDataSource.initialize();
 
-  // Seed Users
+  const roleRepo = AppDataSource.getRepository(Role);
   const userRepo = AppDataSource.getRepository(User);
+
+  // Seed Users
   for (const u of users) {
     const existing = await userRepo.findOne({ where: { email: u.email } });
     if (existing) {
       console.log("Skip user (exists):", u.email);
       continue;
     }
+    const role = await roleRepo.findOne({ where: { name: u.role } });
+    if (!role) {
+      console.warn("Skip user (role not found):", u.email, u.role);
+      continue;
+    }
     const hash = await bcrypt.hash(u.password, 10);
+    const userCode = crypto.randomBytes(32).toString("hex").slice(0, 64);
     const user = userRepo.create({
-      id: u.id,
+      userCode,
       email: u.email,
       passwordHash: hash,
       name: u.name,
-      role: u.role,
+      role,
     });
     await userRepo.save(user);
     console.log("Created user:", u.email, u.role);
@@ -81,10 +91,9 @@ async function run() {
       continue;
     }
     const facility = facilityRepo.create({
-      id: f.id,
       code: f.code,
       name: f.name,
-      facilityType: f.facilityType,
+      facilityType: f.facilityType as import("../database/entity/Facility").FacilityType | null,
       address: f.address,
       phone: f.phone,
       email: f.email,

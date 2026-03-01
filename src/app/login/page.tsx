@@ -44,9 +44,20 @@ export default function LoginPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: loginEmail, password: loginPassword }),
       });
-      let data: { error?: string; user?: unknown };
+
+      type AuthUser = {
+        id: string;
+        email: string;
+        role: string;
+        name: string;
+        token?: string;
+        staffId?: string | null;
+        employeeId?: string | null;
+      };
+
+      let data: { error?: string; user?: AuthUser };
       try {
-        data = await res.json();
+        data = (await res.json()) as { error?: string; user?: AuthUser };
       } catch {
         setError("Server returned invalid response. Try again or use a role button.");
         return;
@@ -56,6 +67,10 @@ export default function LoginPage() {
         return;
       }
       const { user } = data;
+      if (!user) {
+        setError("Login succeeded but no user data returned.");
+        return;
+      }
       setStoredAuth({
         userId: user.id,
         email: user.email,

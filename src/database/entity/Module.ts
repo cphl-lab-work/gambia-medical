@@ -6,23 +6,23 @@ import {
   UpdateDateColumn,
   OneToMany,
 } from "typeorm";
-import { RoleModulePermission } from "./RoleModulePermission";
+import type { RoleModulePermission } from "./RoleModulePermission";
 
 @Entity("modules")
 export class Module {
   @PrimaryGeneratedColumn("uuid")
   id!: string;
 
-  @Column({ type: "varchar", length: 50, unique: true, comment: "Machine-readable key e.g. patient_clerking" })
+  @Column({ type: "varchar", length: 50, unique: true })
   code!: string;
 
-  @Column({ type: "varchar", length: 100, name: "display_name", comment: "Human-readable name" })
+  @Column({ type: "varchar", length: 100, name: "display_name" })
   displayName!: string;
 
   @Column({ type: "text", nullable: true })
   description!: string | null;
 
-  @Column({ type: "varchar", length: 50, nullable: true, comment: "Icon identifier" })
+  @Column({ type: "varchar", length: 50, nullable: true })
   icon!: string | null;
 
   @Column({ type: "integer", name: "sort_order", default: 0 })
@@ -37,6 +37,6 @@ export class Module {
   @UpdateDateColumn({ name: "updated_at" })
   updatedAt!: Date;
 
-  @OneToMany(() => RoleModulePermission, (rmp) => rmp.module)
+  @OneToMany("RoleModulePermission", "module")
   rolePermissions!: RoleModulePermission[];
 }

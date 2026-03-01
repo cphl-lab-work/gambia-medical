@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { AppDataSource } from "@/database/data-source";
 import { FacilityTeam } from "@/database/entity/FacilityTeam";
+import { IsNull } from "typeorm";
 
 export async function GET(request: NextRequest) {
   try {
@@ -56,7 +57,7 @@ export async function POST(request: NextRequest) {
       where: {
         staffId,
         facilityId,
-        deletedAt: null,
+        deletedAt: IsNull(),
       },
     });
 

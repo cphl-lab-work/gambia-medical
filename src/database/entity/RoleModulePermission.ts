@@ -7,8 +7,8 @@ import {
   JoinColumn,
   Unique,
 } from "typeorm";
-import { Role } from "./Role";
-import { Module } from "./Module";
+import type { Role } from "./Role";
+import type { Module } from "./Module";
 
 @Entity("role_module_permissions")
 @Unique("UQ_role_module", ["role", "module"])
@@ -16,11 +16,11 @@ export class RoleModulePermission {
   @PrimaryGeneratedColumn("uuid")
   id!: string;
 
-  @ManyToOne(() => Role, { onDelete: "CASCADE" })
+  @ManyToOne("Role", { onDelete: "CASCADE" })
   @JoinColumn({ name: "role_id" })
   role!: Role;
 
-  @ManyToOne(() => Module, (m) => m.rolePermissions, { onDelete: "CASCADE" })
+  @ManyToOne("Module", "rolePermissions", { onDelete: "CASCADE" })
   @JoinColumn({ name: "module_id" })
   module!: Module;
 

@@ -7,7 +7,7 @@ import {
   JoinColumn,
   Column,
 } from "typeorm";
-import { Employee } from "./Employee";
+import type { Employee } from "./Employee";
 
 @Entity("doctors")
 export class Doctor {
@@ -17,7 +17,7 @@ export class Doctor {
   @Column({ type: "uuid", name: "staff_id" })
   staffId!: string;
 
-  @OneToOne(() => Employee, (e) => e.doctorRecord, { onDelete: "CASCADE" })
+  @OneToOne("Employee", "doctorRecord", { onDelete: "CASCADE" })
   @JoinColumn({ name: "staff_id" })
   staff!: Employee;
 
